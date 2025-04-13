@@ -1,0 +1,30 @@
+/* Thay thế float-right của Bootstrap 4 bằng float-end của Bootstrap 5 */
+.float-end {
+    float: right !important;
+}
+
+/* Thay thế float-left của Bootstrap 4 bằng float-start của Bootstrap 5 */
+.float-start {
+    float: left !important;
+}
+
+/* Thay thế ml-auto của Bootstrap 4 bằng ms-auto của Bootstrap 5 */
+.ms-auto {
+    margin-left: auto !important;
+}
+
+/* Thay thế mr-auto của Bootstrap 4 bằng me-auto của Bootstrap 5 */
+.me-auto {
+    margin-right: auto !important;
+}
+
+/* Các điều chỉnh khác cho AdminLTE 3 để tương thích với Bootstrap 5 */
+.card-title {
+    margin-bottom: 0;
+}
+
+.nav-sidebar .nav-link p {
+    display: inline;
+    margin: 0;
+    white-space: normal;
+}
