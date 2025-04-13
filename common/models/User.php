@@ -179,6 +179,22 @@ class User extends ActiveRecord implements IdentityInterface
         
         return !empty($roleNames) ? implode(', ', $roleNames) : 'Chưa gán vai trò';
     }
+	
+	    /**
+     * Kiểm tra người dùng có quyền truy cập POS không
+     * 
+     * @return bool true nếu có quyền, false nếu không
+     */
+    public function canAccessPos()
+    {
+        // Nếu bạn đang sử dụng RBAC
+        if (Yii::$app->has('authManager')) {
+            return Yii::$app->authManager->checkAccess($this->getId(), 'accessPos');
+        }
+        
+        // Nếu không sử dụng RBAC, tạm thời cho phép tất cả người dùng truy cập POS
+        return true;
+    }
     
     public function recordLoginSuccess()
     {

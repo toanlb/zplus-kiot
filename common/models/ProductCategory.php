@@ -22,6 +22,9 @@ use Yii;
 class ProductCategory extends \yii\db\ActiveRecord
 {
 
+	// Định nghĩa hằng số STATUS_ACTIVE
+    const STATUS_ACTIVE = 1;
+    const STATUS_INACTIVE = 0;
 
     /**
      * {@inheritdoc}
