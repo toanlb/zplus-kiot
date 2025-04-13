@@ -578,6 +578,13 @@ $csrfToken = Yii::$app->request->csrfToken;
 }
 </style>
 
+<script>
+// Định nghĩa hàm formatCurrency ở ngoài để có thể được sử dụng bất kỳ đâu
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN').format(amount);
+}
+</script>
+
 <?php
 $js = <<<JS
 // Variables for cart and products
@@ -595,11 +602,6 @@ let grandTotal = 0;
 let selectedCustomerId = null;
 let selectedCustomerName = 'Khách lẻ';
 let orderNote = '';
-
-// Hàm định dạng tiền tệ
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('vi-VN').format(amount);
-}
 
 $(document).ready(function() {
     // Initialize
@@ -901,12 +903,13 @@ $(document).ready(function() {
             products.forEach(function(product) {
                 let priceHtml = '';
                 if (product.discount_price > 0) {
-                    priceHtml = `
-                        <span class="product-price">${formatCurrency(product.discount_price)}</span>
-                        <span class="product-original-price">${formatCurrency(product.price)}</span>
-                    `;
+                    var discountPrice = formatCurrency(product.discount_price);
+                    var originalPrice = formatCurrency(product.price);
+                    priceHtml = '<span class="product-price">' + discountPrice + '</span>' +
+                                '<span class="product-original-price">' + originalPrice + '</span>';
                 } else {
-                    priceHtml = `<span class="product-price">${formatCurrency(product.price)}</span>`;
+                    var normalPrice = formatCurrency(product.price);
+                    priceHtml = '<span class="product-price">' + normalPrice + '</span>';
                 }
                 
                 html += `
@@ -935,12 +938,13 @@ $(document).ready(function() {
             products.forEach(function(product) {
                 let priceHtml = '';
                 if (product.discount_price > 0) {
-                    priceHtml = `
-                        <span class="product-price">${formatCurrency(product.discount_price)}</span>
-                        <span class="product-original-price">${formatCurrency(product.price)}</span>
-                    `;
+                    var discountPrice = formatCurrency(product.discount_price);
+                    var originalPrice = formatCurrency(product.price);
+                    priceHtml = '<span class="product-price">' + discountPrice + '</span>' +
+                                '<span class="product-original-price">' + originalPrice + '</span>';
                 } else {
-                    priceHtml = `<span class="product-price">${formatCurrency(product.price)}</span>`;
+                    var normalPrice = formatCurrency(product.price);
+                    priceHtml = '<span class="product-price">' + normalPrice + '</span>';
                 }
                 
                 html += `
@@ -1052,12 +1056,13 @@ $(document).ready(function() {
     function renderProductDetails(product) {
         let priceHtml = '';
         if (product.discount_price > 0) {
-            priceHtml = `
-                <span class="text-success font-weight-bold">${formatCurrency(product.discount_price)}</span>
-                <span class="text-danger text-strikethrough ml-2">${formatCurrency(product.price)}</span>
-            `;
+            var discountPrice = formatCurrency(product.discount_price);
+            var originalPrice = formatCurrency(product.price);
+            priceHtml = '<span class="text-success font-weight-bold">' + discountPrice + '</span>' +
+                        '<span class="text-danger text-strikethrough ml-2">' + originalPrice + '</span>';
         } else {
-            priceHtml = `<span class="text-success font-weight-bold">${formatCurrency(product.price)}</span>`;
+            var normalPrice = formatCurrency(product.price);
+            priceHtml = '<span class="text-success font-weight-bold">' + normalPrice + '</span>';
         }
         
         let html = `
