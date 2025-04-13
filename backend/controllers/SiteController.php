@@ -8,6 +8,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
+use common\models\User;
 
 /**
  * Site controller
@@ -80,25 +81,28 @@ class SiteController extends Controller
      *
      * @return string|Response
      */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
+	public function actionLogin()
+	{
+		if (!Yii::$app->user->isGuest) {
+			return $this->goHome();
+		}
 
-        $this->layout = 'blank';
+		$model = new LoginForm();
+		if ($model->load(Yii::$app->request->post()) && $model->login()) {
+			// Ghi nhận đăng nhập thành công
+			$user = User::findByUsername($model->username);
+			if ($user) {
+				$user->recordLoginSuccess();
+			}
+			return $this->goBack();
+		}
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
+		$model->password = '';
 
-        $model->password = '';
-
-        return $this->render('login', [
-            'model' => $model,
-        ]);
-    }
+		return $this->render('login', [
+			'model' => $model,
+		]);
+	}
 
     /**
      * Logout action.
