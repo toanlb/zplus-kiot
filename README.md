@@ -3,13 +3,15 @@
 ## 1. TỔNG QUAN DỰ ÁN
 
 ### 1.1. Giới thiệu
-Hệ thống Quản lý Bán hàng là một ứng dụng web được phát triển để giúp doanh nghiệp quản lý hoạt động bán hàng, từ quản lý sản phẩm, khách hàng, đơn hàng đến bảo hành và nhà cung cấp. Hệ thống được xây dựng trên nền tảng PHP với framework Yii2 Advanced và cơ sở dữ liệu MySQL.
+Hệ thống Quản lý Bán hàng là một ứng dụng web được phát triển để giúp doanh nghiệp quản lý toàn diện hoạt động kinh doanh, từ quản lý sản phẩm, khách hàng, đơn hàng đến bảo hành, nhà cung cấp, kho hàng và kế toán. Hệ thống được xây dựng trên nền tảng PHP với framework Yii2 Advanced và cơ sở dữ liệu MySQL.
 
 ### 1.2. Mục tiêu
 - Xây dựng hệ thống quản lý bán hàng toàn diện
 - Tự động hóa quy trình bán hàng từ đặt hàng đến giao hàng và bảo hành
-- Theo dõi thông tin khách hàng, sản phẩm và nhà cung cấp
-- Cung cấp các báo cáo và thống kê để hỗ trợ ra quyết định kinh doanh
+- Quản lý thông tin khách hàng, sản phẩm và nhà cung cấp
+- Quản lý kho hàng đa chi nhánh và chuyển kho
+- Theo dõi thu chi và công nợ
+- Cung cấp báo cáo và thống kê để hỗ trợ ra quyết định kinh doanh
 - Phân quyền người dùng để đảm bảo an toàn dữ liệu
 
 ### 1.3. Công nghệ sử dụng
@@ -19,7 +21,11 @@ Hệ thống Quản lý Bán hàng là một ứng dụng web được phát tri
 - **Giao diện người dùng**: AdminLTE 3, Bootstrap 4, Font Awesome 6
 - **Môi trường phát triển**: XAMPP
 
-## 2. KIẾN TRÚC HỆ THỐNG
+### 1.4. Các giai đoạn phát triển
+- **Giai đoạn 1 (Đã hoàn thành)**: Phát triển các module cơ bản (sản phẩm, khách hàng, đơn hàng, POS, bảo hành, nhà cung cấp, RBAC)
+- **Giai đoạn 2 (Đang lên kế hoạch)**: Phát triển nghiệp vụ kế toán và kho hàng (nhập hàng, thu chi, quản lý kho, chuyển kho, báo cáo)
+
+## 2. TỔNG QUAN KIẾN TRÚC HỆ THỐNG
 
 ### 2.1. Mô hình MVC
 Hệ thống được xây dựng theo mô hình MVC (Model-View-Controller) của Yii2, giúp tổ chức code rõ ràng và dễ bảo trì:
@@ -48,40 +54,41 @@ toanlb/
 ```
 
 ### 2.3. Cơ sở dữ liệu
-Hệ thống sử dụng cơ sở dữ liệu quan hệ MySQL với các bảng chính:
-- **products**: Quản lý thông tin sản phẩm
-- **product_categories**: Quản lý danh mục sản phẩm
-- **product_units**: Quản lý đơn vị tính
-- **customers**: Quản lý thông tin khách hàng
-- **orders**: Quản lý đơn hàng
-- **order_items**: Chi tiết sản phẩm trong đơn hàng
-- **order_payments**: Thông tin thanh toán
-- **product_warranties**: Quản lý bảo hành sản phẩm
-- **warranty_repair_logs**: Lịch sử sửa chữa bảo hành
-- **suppliers**: Quản lý nhà cung cấp
-- **auth_***: Các bảng phân quyền RBAC
+Hệ thống sử dụng cơ sở dữ liệu quan hệ MySQL với các nhóm bảng chính:
+- **Quản lý sản phẩm**: products, product_categories, product_units
+- **Quản lý khách hàng**: customers
+- **Quản lý đơn hàng**: orders, order_items, order_payments, order_details
+- **Quản lý bảo hành**: product_warranties, warranty_repair_logs
+- **Quản lý nhà cung cấp**: suppliers
+- **Phân quyền**: auth_assignment, auth_item, auth_item_child, auth_rule, user
+- **Quản lý kho** *(Giai đoạn 2)*: warehouses, warehouse_stock, stock_adjustments
+- **Nhập hàng** *(Giai đoạn 2)*: purchase_orders, purchase_order_items, purchase_order_payments
+- **Chuyển kho** *(Giai đoạn 2)*: stock_transfers, stock_transfer_items
+- **Quản lý thu chi** *(Giai đoạn 2)*: financial_transactions, financial_categories
 
 ## 3. CHỨC NĂNG HỆ THỐNG
 
-### 3.1. Quản lý Sản phẩm
+### 3.1. Chức năng đã phát triển (Giai đoạn 1)
+
+#### 3.1.1. Quản lý Sản phẩm
 - **Danh sách sản phẩm**: Hiển thị, tìm kiếm, lọc và phân trang
 - **Thêm/sửa/xóa sản phẩm**: Quản lý thông tin sản phẩm
 - **Quản lý danh mục**: Phân loại sản phẩm theo danh mục
 - **Quản lý đơn vị tính**: Đơn vị tính cho sản phẩm
 
-### 3.2. Quản lý Khách hàng
+#### 3.1.2. Quản lý Khách hàng
 - **Danh sách khách hàng**: Hiển thị, tìm kiếm, lọc và phân trang
 - **Thêm/sửa/xóa khách hàng**: Quản lý thông tin khách hàng
 - **Lịch sử đơn hàng**: Xem lịch sử mua hàng của khách
 - **Điểm tích lũy và công nợ**: Theo dõi điểm thưởng và nợ của khách hàng
 
-### 3.3. Quản lý Đơn hàng
+#### 3.1.3. Quản lý Đơn hàng
 - **Danh sách đơn hàng**: Hiển thị, tìm kiếm và lọc
 - **Tạo đơn hàng mới**: Thêm nhiều sản phẩm vào đơn hàng
 - **Thanh toán đa phương thức**: Hỗ trợ nhiều hình thức thanh toán
 - **In hóa đơn**: Tạo và in hóa đơn bán hàng
 
-### 3.4. Bán hàng (POS)
+#### 3.1.4. Bán hàng (POS)
 - **Giao diện bán hàng**: Màn hình POS trực quan
 - **Tìm kiếm sản phẩm**: Tìm kiếm nhanh chóng
 - **Quản lý giỏ hàng**: Thêm, sửa, xóa sản phẩm trong giỏ hàng
@@ -89,233 +96,640 @@ Hệ thống sử dụng cơ sở dữ liệu quan hệ MySQL với các bảng 
 - **Thanh toán**: Hỗ trợ nhiều phương thức thanh toán
 - **In hóa đơn**: In hóa đơn bán hàng
 
-### 3.5. Quản lý Bảo hành
+#### 3.1.5. Quản lý Bảo hành
 - **Danh sách bảo hành**: Theo dõi tình trạng bảo hành
 - **Thêm/sửa/xóa bảo hành**: Quản lý thông tin bảo hành
 - **Lịch sử sửa chữa**: Theo dõi các lần sửa chữa
 - **Thông báo hết hạn**: Cảnh báo bảo hành sắp hết hạn
 
-### 3.6. Quản lý Nhà cung cấp
+#### 3.1.6. Quản lý Nhà cung cấp
 - **Danh sách nhà cung cấp**: Hiển thị, tìm kiếm và lọc
 - **Thêm/sửa/xóa nhà cung cấp**: Quản lý thông tin nhà cung cấp
 - **Thống kê giao dịch**: Theo dõi hoạt động mua hàng từ nhà cung cấp
 
-### 3.7. Phân quyền RBAC
+#### 3.1.7. Phân quyền RBAC
 - **Quản lý vai trò**: Tạo và quản lý các vai trò người dùng
 - **Quản lý quyền**: Gán quyền cho từng vai trò
 - **Gán vai trò**: Gán vai trò cho người dùng
 - **Kiểm soát truy cập**: Hạn chế quyền truy cập vào các chức năng
 
-## 4. HƯỚNG DẪN CÀI ĐẶT
+### 3.2. Chức năng sẽ phát triển (Giai đoạn 2)
 
-### 4.1. Yêu cầu hệ thống
-- PHP >= 8.0
-- MySQL >= 5.7 hoặc MariaDB >= 10.4
-- Composer
-- Web server (Apache/Nginx)
-- Các extension PHP cần thiết: PDO, GD, Intl, Mbstring, JSON
+#### 3.2.1. Quản lý Nhập hàng
+- **Danh sách đơn nhập hàng**: Hiển thị, tìm kiếm, lọc đơn nhập từ nhà cung cấp
+- **Tạo đơn nhập hàng**: Chọn nhà cung cấp, kho, thêm sản phẩm, giá nhập, thuế, chiết khấu
+- **Quản lý trạng thái đơn nhập hàng**: Theo dõi trạng thái đơn: Chờ xử lý, Đã duyệt, Đã nhận một phần, Đã nhận đủ, Đã hủy
+- **Quản lý thanh toán nhà cung cấp**: Theo dõi trạng thái thanh toán: Chưa thanh toán, Thanh toán một phần, Đã thanh toán, Quá hạn thanh toán
+- **In phiếu nhập kho**: Tạo và in phiếu nhập kho với đầy đủ thông tin
 
-### 4.2. Cài đặt
-1. **Chuẩn bị môi trường**:
-   - Cài đặt XAMPP hoặc môi trường tương tự
-   - Tạo cơ sở dữ liệu MySQL mới
+#### 3.2.2. Quản lý Thu chi
+- **Phiếu thu**: Tạo phiếu thu từ khách hàng (liên kết với đơn hàng hoặc độc lập)
+- **Phiếu chi**: Tạo phiếu chi cho nhà cung cấp hoặc chi phí hoạt động
+- **Quản lý danh mục thu chi**: Phân loại các khoản thu/chi theo danh mục, phân cấp
+- **Báo cáo thu chi**: Báo cáo dòng tiền, theo danh mục, theo đối tượng
+- **Quản lý công nợ**: Theo dõi công nợ khách hàng, nhà cung cấp
 
-2. **Cài đặt ứng dụng**:
-   ```bash
-   # Sao chép mã nguồn
-   git clone [repository_url] toanlb
-   cd toanlb
+#### 3.2.3. Quản lý Kho hàng
+- **Quản lý nhiều kho**: Thêm/sửa/xóa kho hàng, chỉ định kho mặc định
+- **Quản lý tồn kho theo kho**: Xem tồn kho theo từng kho, lọc sản phẩm
+- **Điều chỉnh tồn kho**: Tăng/giảm số lượng sản phẩm trong kho, ghi nhận lý do
+- **Báo cáo kho**: Báo cáo tồn kho, sản phẩm sắp hết, tồn đọng, giá trị tồn kho
 
-   # Cài đặt các phụ thuộc
-   composer install
+#### 3.2.4. Quản lý Chuyển kho
+- **Tạo phiếu chuyển kho**: Chọn kho nguồn, kho đích, sản phẩm, số lượng
+- **Quản lý trạng thái chuyển kho**: Theo dõi trạng thái: Chờ duyệt, Đã duyệt, Đang vận chuyển, Đã nhận một phần, Đã nhận đủ, Đã hủy
+- **Nhận hàng chuyển kho**: Xác nhận số lượng nhận thực tế, ghi nhận chênh lệch
+- **Báo cáo chuyển kho**: Báo cáo số lượng chuyển kho theo thời gian, sản phẩm, kho
 
-   # Cấu hình môi trường
-   cp .env.example .env
-   # Chỉnh sửa file .env để cấu hình kết nối CSDL
+#### 3.2.5. Báo cáo và Thống kê nâng cao
+- **Báo cáo doanh thu**: Theo thời gian, sản phẩm, danh mục, khách hàng
+- **Báo cáo lợi nhuận**: Doanh thu, chi phí, lợi nhuận gộp/ròng
+- **Báo cáo nhập xuất tồn**: Số lượng nhập/xuất/tồn theo thời gian, sản phẩm
+- **Báo cáo công nợ**: Công nợ khách hàng, nhà cung cấp, quá hạn
+- **Biểu đồ và trực quan hóa dữ liệu**: Hiển thị dữ liệu dưới dạng biểu đồ
 
-   # Khởi tạo ứng dụng
-   php init --env=Development --overwrite=All
+## 4. THIẾT KẾ CƠ SỞ DỮ LIỆU (GIAI ĐOẠN 2)
 
-   # Tạo cơ sở dữ liệu
-   php yii migrate
-   ```
+### 4.1. Quản lý Nhập hàng
 
-3. **Cấu hình web server**:
-   - Trỏ document root đến thư mục `backend/web`
-   - Đảm bảo mod_rewrite đã được bật (Apache)
+```sql
+-- Phiếu nhập kho (đơn nhập hàng)
+CREATE TABLE `purchase_orders` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `supplier_id` int(11) NOT NULL,
+  `warehouse_id` int(11) NOT NULL,
+  `total_amount` decimal(15,2) NOT NULL,
+  `discount_amount` decimal(15,2) DEFAULT 0.00,
+  `tax_amount` decimal(15,2) DEFAULT 0.00,
+  `final_amount` decimal(15,2) NOT NULL,
+  `paid_amount` decimal(15,2) DEFAULT 0.00,
+  `status` varchar(30) DEFAULT 'pending',
+  `payment_status` varchar(30) DEFAULT 'unpaid',
+  `payment_due_date` date DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `creator` varchar(100) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `fk-purchase_orders-supplier_id` (`supplier_id`),
+  KEY `fk-purchase_orders-warehouse_id` (`warehouse_id`),
+  CONSTRAINT `fk-purchase_orders-supplier_id` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`),
+  CONSTRAINT `fk-purchase_orders-warehouse_id` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-4. **Truy cập hệ thống**:
-   - Truy cập backend: `http://localhost/toanlb/backend/web/`
-   - Đăng nhập với tài khoản mặc định:
-     - Username: admin
-     - Password: admin123
+-- Chi tiết phiếu nhập
+CREATE TABLE `purchase_order_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `purchase_order_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `product_code` varchar(50) NOT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `unit` varchar(50) DEFAULT NULL,
+  `quantity` decimal(10,2) NOT NULL,
+  `unit_price` decimal(15,2) NOT NULL,
+  `discount_percentage` decimal(5,2) DEFAULT 0.00,
+  `discount_amount` decimal(15,2) DEFAULT 0.00,
+  `tax_percentage` decimal(5,2) DEFAULT 0.00,
+  `tax_amount` decimal(15,2) DEFAULT 0.00,
+  `final_price` decimal(15,2) NOT NULL,
+  `notes` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk-purchase_order_items-purchase_order_id` (`purchase_order_id`),
+  KEY `fk-purchase_order_items-product_id` (`product_id`),
+  CONSTRAINT `fk-purchase_order_items-purchase_order_id` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk-purchase_order_items-product_id` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-### 4.3. Cấu hình
-- **Cơ sở dữ liệu**: Cấu hình trong `common/config/main-local.php`
-- **URL**: Cấu hình trong `backend/config/main.php`
-- **Ngôn ngữ và múi giờ**: Cấu hình trong `common/config/main.php`
+-- Thanh toán phiếu nhập
+CREATE TABLE `purchase_order_payments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `purchase_order_id` int(11) NOT NULL,
+  `payment_method` varchar(50) NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `payment_date` date NOT NULL,
+  `reference_number` varchar(100) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `creator` varchar(100) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk-purchase_order_payments-purchase_order_id` (`purchase_order_id`),
+  CONSTRAINT `fk-purchase_order_payments-purchase_order_id` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
 
-## 5. HƯỚNG DẪN SỬ DỤNG
+### 4.2. Quản lý Thu chi
 
-### 5.1. Đăng nhập và Trang chủ
-1. Truy cập vào hệ thống qua URL: `http://localhost/toanlb/backend/web/`
-2. Đăng nhập bằng tài khoản được cung cấp
-3. Trang chủ hiển thị bảng điều khiển với các thông số tổng quan
+```sql
+-- Phiếu thu/chi
+CREATE TABLE `financial_transactions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `type` enum('receipt','payment') NOT NULL COMMENT 'receipt: phiếu thu, payment: phiếu chi',
+  `amount` decimal(15,2) NOT NULL,
+  `transaction_date` date NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `related_id` int(11) DEFAULT NULL COMMENT 'ID của đơn hàng, nhập hàng hoặc đối tác liên quan',
+  `related_type` varchar(50) DEFAULT NULL COMMENT 'order, purchase_order, customer, supplier, etc.',
+  `payment_method` varchar(50) NOT NULL,
+  `reference_number` varchar(100) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `attachment` varchar(255) DEFAULT NULL,
+  `creator` varchar(100) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `fk-financial_transactions-category_id` (`category_id`),
+  CONSTRAINT `fk-financial_transactions-category_id` FOREIGN KEY (`category_id`) REFERENCES `financial_categories` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-### 5.2. Quản lý Sản phẩm
-1. **Xem danh sách sản phẩm**:
-   - Truy cập menu "Quản lý sản phẩm" > "Danh sách sản phẩm"
-   - Có thể tìm kiếm, lọc và sắp xếp
+-- Danh mục thu chi
+CREATE TABLE `financial_categories` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `type` enum('receipt','payment','both') NOT NULL,
+  `parent_id` int(11) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk-financial_categories-parent_id` (`parent_id`),
+  CONSTRAINT `fk-financial_categories-parent_id` FOREIGN KEY (`parent_id`) REFERENCES `financial_categories` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
 
-2. **Thêm sản phẩm mới**:
-   - Nhấn nút "Thêm mới" trên trang danh sách
-   - Điền thông tin sản phẩm và lưu
+### 4.3. Quản lý Kho hàng
 
-3. **Quản lý danh mục**:
-   - Truy cập menu "Quản lý sản phẩm" > "Danh mục sản phẩm"
-   - Thêm, sửa, xóa danh mục
+```sql
+-- Kho hàng
+CREATE TABLE `warehouses` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `address` text DEFAULT NULL,
+  `manager` varchar(100) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `is_default` tinyint(1) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1,
+  `notes` text DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-### 5.3. Quản lý Khách hàng
-1. **Xem danh sách khách hàng**:
-   - Truy cập menu "Quản lý khách hàng"
-   - Tìm kiếm, lọc theo nhiều tiêu chí
+-- Tồn kho theo kho
+CREATE TABLE `warehouse_stock` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `warehouse_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `updated_at` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `warehouse_product` (`warehouse_id`,`product_id`),
+  KEY `fk-warehouse_stock-product_id` (`product_id`),
+  CONSTRAINT `fk-warehouse_stock-product_id` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  CONSTRAINT `fk-warehouse_stock-warehouse_id` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-2. **Thêm khách hàng mới**:
-   - Nhấn nút "Thêm mới"
-   - Điền thông tin và lưu
+-- Điều chỉnh tồn kho
+CREATE TABLE `stock_adjustments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `warehouse_id` int(11) NOT NULL,
+  `reason` varchar(255) NOT NULL,
+  `notes` text DEFAULT NULL,
+  `creator` varchar(100) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `fk-stock_adjustments-warehouse_id` (`warehouse_id`),
+  CONSTRAINT `fk-stock_adjustments-warehouse_id` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-3. **Xem lịch sử đơn hàng của khách hàng**:
-   - Vào chi tiết khách hàng
-   - Xem tab "Lịch sử đơn hàng"
+-- Chi tiết điều chỉnh tồn kho
+CREATE TABLE `stock_adjustment_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `adjustment_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity_before` decimal(10,2) NOT NULL,
+  `adjusted_quantity` decimal(10,2) NOT NULL,
+  `quantity_after` decimal(10,2) NOT NULL,
+  `notes` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk-stock_adjustment_items-adjustment_id` (`adjustment_id`),
+  KEY `fk-stock_adjustment_items-product_id` (`product_id`),
+  CONSTRAINT `fk-stock_adjustment_items-adjustment_id` FOREIGN KEY (`adjustment_id`) REFERENCES `stock_adjustments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk-stock_adjustment_items-product_id` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
 
-### 5.4. Quản lý Đơn hàng
-1. **Xem danh sách đơn hàng**:
-   - Truy cập menu "Quản lý đơn hàng"
-   - Tìm kiếm, lọc theo trạng thái, thời gian
+### 4.4. Quản lý Chuyển kho
 
-2. **Tạo đơn hàng mới**:
-   - Nhấn nút "Tạo đơn hàng"
-   - Chọn khách hàng
-   - Thêm sản phẩm vào đơn hàng
-   - Chọn phương thức thanh toán và hoàn tất
+```sql
+-- Phiếu chuyển kho
+CREATE TABLE `stock_transfers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `source_warehouse_id` int(11) NOT NULL,
+  `target_warehouse_id` int(11) NOT NULL,
+  `status` varchar(30) DEFAULT 'pending',
+  `transfer_date` date NOT NULL,
+  `notes` text DEFAULT NULL,
+  `creator` varchar(100) DEFAULT NULL,
+  `approver` varchar(100) DEFAULT NULL,
+  `receiver` varchar(100) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `approved_at` int(11) DEFAULT NULL,
+  `received_at` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `fk-stock_transfers-source_warehouse_id` (`source_warehouse_id`),
+  KEY `fk-stock_transfers-target_warehouse_id` (`target_warehouse_id`),
+  CONSTRAINT `fk-stock_transfers-source_warehouse_id` FOREIGN KEY (`source_warehouse_id`) REFERENCES `warehouses` (`id`),
+  CONSTRAINT `fk-stock_transfers-target_warehouse_id` FOREIGN KEY (`target_warehouse_id`) REFERENCES `warehouses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-3. **Xem chi tiết đơn hàng**:
-   - Nhấn vào mã đơn hàng
-   - Xem thông tin chi tiết
-   - In hóa đơn nếu cần
+-- Chi tiết phiếu chuyển kho
+CREATE TABLE `stock_transfer_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `transfer_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity` decimal(10,2) NOT NULL,
+  `received_quantity` decimal(10,2) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk-stock_transfer_items-transfer_id` (`transfer_id`),
+  KEY `fk-stock_transfer_items-product_id` (`product_id`),
+  CONSTRAINT `fk-stock_transfer_items-product_id` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  CONSTRAINT `fk-stock_transfer_items-transfer_id` FOREIGN KEY (`transfer_id`) REFERENCES `stock_transfers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
 
-### 5.5. Sử dụng POS
-1. **Truy cập màn hình POS**:
-   - Truy cập menu "Bán hàng (POS)"
+### 4.5. Cập nhật bảng Orders
 
-2. **Thực hiện bán hàng**:
-   - Tìm kiếm và thêm sản phẩm vào giỏ hàng
-   - Điều chỉnh số lượng nếu cần
-   - Áp dụng giảm giá (nếu có)
-   - Chọn phương thức thanh toán
-   - Hoàn tất và in hóa đơn
+```sql
+-- Thêm trường warehouse_id vào bảng orders
+ALTER TABLE `orders` ADD `warehouse_id` INT(11) NOT NULL AFTER `customer_id`;
+ALTER TABLE `orders` ADD CONSTRAINT `fk-orders-warehouse_id` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`);
+```
 
-### 5.6. Quản lý Bảo hành
-1. **Xem danh sách bảo hành**:
-   - Truy cập menu "Quản lý bảo hành"
-   - Tìm kiếm theo serial, sản phẩm, khách hàng
+## 5. QUY TRÌNH NGHIỆP VỤ (GIAI ĐOẠN 2)
 
-2. **Thêm thông tin bảo hành**:
-   - Nhấn nút "Thêm mới"
-   - Chọn sản phẩm, khách hàng và nhập thông tin bảo hành
-   - Lưu thông tin
+### 5.1. Quy trình Nhập hàng
 
-3. **Ghi nhận sửa chữa**:
-   - Vào chi tiết bảo hành
-   - Nhấn "Thêm sửa chữa"
-   - Điền thông tin sửa chữa và lưu
+1. **Tạo đơn đặt hàng**:
+   - Người dùng tạo đơn đặt hàng với nhà cung cấp
+   - Chọn sản phẩm, số lượng và giá
+   - Lưu đơn ở trạng thái "Chờ xử lý"
 
-### 5.7. Quản lý Nhà cung cấp
-1. **Xem danh sách nhà cung cấp**:
-   - Truy cập menu "Quản lý nhà cung cấp"
-   - Tìm kiếm và lọc
+2. **Phê duyệt đơn đặt hàng**:
+   - Người có quyền duyệt xem xét và phê duyệt đơn
+   - Đơn chuyển sang trạng thái "Đã duyệt"
 
-2. **Thêm nhà cung cấp mới**:
-   - Nhấn nút "Thêm mới"
-   - Điền thông tin nhà cung cấp và lưu
+3. **Nhận hàng**:
+   - Khi hàng về, người dùng xác nhận nhận hàng
+   - Nhập số lượng nhận thực tế
+   - Hệ thống tự động cập nhật tồn kho
+   - Đơn chuyển sang trạng thái "Đã nhận"
 
-### 5.8. Quản lý Phân quyền
-1. **Xem danh sách vai trò và quyền**:
-   - Truy cập menu "Quản lý phân quyền"
+4. **Thanh toán**:
+   - Tạo phiếu chi cho nhà cung cấp
+   - Liên kết phiếu chi với đơn nhập hàng
+   - Cập nhật trạng thái thanh toán
 
-2. **Cập nhật quyền cho vai trò**:
-   - Chọn vai trò cần cập nhật
-   - Điều chỉnh quyền và lưu
+### 5.2. Quy trình Thu/Chi
 
-3. **Gán vai trò cho người dùng**:
-   - Nhấn "Gán vai trò"
-   - Chọn người dùng và vai trò cần gán
+1. **Tạo phiếu thu**:
+   - Khi khách hàng thanh toán, tạo phiếu thu
+   - Chọn danh mục thu phù hợp
+   - Liên kết với đơn hàng (nếu có)
 
-## 6. PHÁT TRIỂN VÀ MỞ RỘNG
+2. **Tạo phiếu chi**:
+   - Khi thanh toán cho nhà cung cấp, tạo phiếu chi
+   - Khi chi tiêu khác, tạo phiếu chi với danh mục tương ứng
+   - Đính kèm chứng từ (nếu có)
 
-### 6.1. Các module đang phát triển
-- **Module báo cáo và thống kê**:
-  - Báo cáo doanh thu
-  - Báo cáo tồn kho
-  - Báo cáo lợi nhuận
-  - Biểu đồ trực quan
+3. **Phê duyệt phiếu chi** (tùy chọn):
+   - Với các khoản chi lớn, có thể yêu cầu phê duyệt trước
+   - Người có quyền xem xét và duyệt phiếu chi
+
+4. **Báo cáo định kỳ**:
+   - Tổng hợp thu chi theo ngày/tuần/tháng
+   - Đối chiếu với sổ quỹ thực tế
+
+### 5.3. Quy trình Chuyển kho
+
+1. **Tạo phiếu chuyển kho**:
+   - Người dùng tạo phiếu chuyển kho
+   - Chọn kho nguồn, kho đích và sản phẩm
+   - Nhập số lượng cần chuyển
+
+2. **Phê duyệt chuyển kho** (tùy chọn):
+   - Người có quyền xem xét và phê duyệt
+   - Phiếu chuyển sang trạng thái "Đã duyệt"
+
+3. **Xuất hàng**:
+   - Nhân viên kho nguồn xuất hàng
+   - Hệ thống giảm số lượng tồn kho tại kho nguồn
+   - Phiếu chuyển sang trạng thái "Đang vận chuyển"
+
+4. **Nhận hàng**:
+   - Nhân viên kho đích xác nhận nhận hàng
+   - Nhập số lượng nhận thực tế
+   - Hệ thống tăng số lượng tồn kho tại kho đích
+   - Phiếu chuyển sang trạng thái "Đã nhận"
+
+## 6. PHÂN QUYỀN BỔ SUNG (GIAI ĐOẠN 2)
+
+Các quyền mới cần thêm vào hệ thống RBAC:
+
+```php
+// Nhập hàng
+$viewPurchase = $auth->createPermission('viewPurchase');
+$viewPurchase->description = 'Xem đơn nhập hàng';
+$auth->add($viewPurchase);
+
+$createPurchase = $auth->createPermission('createPurchase');
+$createPurchase->description = 'Tạo đơn nhập hàng';
+$auth->add($createPurchase);
+
+$approvePurchase = $auth->createPermission('approvePurchase');
+$approvePurchase->description = 'Duyệt đơn nhập hàng';
+$auth->add($approvePurchase);
+
+// Thu chi
+$viewFinance = $auth->createPermission('viewFinance');
+$viewFinance->description = 'Xem phiếu thu chi';
+$auth->add($viewFinance);
+
+$createReceipt = $auth->createPermission('createReceipt');
+$createReceipt->description = 'Tạo phiếu thu';
+$auth->add($createReceipt);
+
+$createPayment = $auth->createPermission('createPayment');
+$createPayment->description = 'Tạo phiếu chi';
+$auth->add($createPayment);
+
+$approvePayment = $auth->createPermission('approvePayment');
+$approvePayment->description = 'Duyệt phiếu chi';
+$auth->add($approvePayment);
+
+// Kho hàng
+$viewWarehouse = $auth->createPermission('viewWarehouse');
+$viewWarehouse->description = 'Xem kho hàng';
+$auth->add($viewWarehouse);
+
+$manageWarehouse = $auth->createPermission('manageWarehouse');
+$manageWarehouse->description = 'Quản lý kho hàng';
+$auth->add($manageWarehouse);
+
+$adjustStock = $auth->createPermission('adjustStock');
+$adjustStock->description = 'Điều chỉnh tồn kho';
+$auth->add($adjustStock);
+
+// Chuyển kho
+$viewTransfer = $auth->createPermission('viewTransfer');
+$viewTransfer->description = 'Xem phiếu chuyển kho';
+$auth->add($viewTransfer);
+
+$createTransfer = $auth->createPermission('createTransfer');
+$createTransfer->description = 'Tạo phiếu chuyển kho';
+$auth->add($createTransfer);
+
+$approveTransfer = $auth->createPermission('approveTransfer');
+$approveTransfer->description = 'Duyệt phiếu chuyển kho';
+$auth->add($approveTransfer);
+
+$receiveTransfer = $auth->createPermission('receiveTransfer');
+$receiveTransfer->description = 'Nhận hàng chuyển kho';
+$auth->add($receiveTransfer);
+```
+
+Gán quyền cho các vai trò hiện có:
+
+```php
+// Vai trò: Thủ kho
+$storekeeper = $auth->createRole('storekeeper');
+$storekeeper->description = 'Thủ kho';
+$auth->add($storekeeper);
+$auth->addChild($storekeeper, $viewWarehouse);
+$auth->addChild($storekeeper, $viewTransfer);
+$auth->addChild($storekeeper, $receiveTransfer);
+$auth->addChild($storekeeper, $adjustStock);
+$auth->addChild($storekeeper, $viewProduct);
+
+// Vai trò: Kế toán
+$accountant = $auth->createRole('accountant');
+$accountant->description = 'Kế toán';
+$auth->add($accountant);
+$auth->addChild($accountant, $viewFinance);
+$auth->addChild($accountant, $createReceipt);
+$auth->addChild($accountant, $createPayment);
+$auth->addChild($accountant, $viewPurchase);
+$auth->addChild($accountant, $viewReport);
+
+// Cập nhật vai trò Manager
+$auth->addChild($manager, $createPurchase);
+$auth->addChild($manager, $approvePurchase);
+$auth->addChild($manager, $approvePayment);
+$auth->addChild($manager, $manageWarehouse);
+$auth->addChild($manager, $createTransfer);
+$auth->addChild($manager, $approveTransfer);
+```
+
+## 7. KẾ HOẠCH TRIỂN KHAI GIAI ĐOẠN 2
+
+### 7.1. Lộ trình triển khai
+
+| Giai đoạn | Nội dung | Thời gian dự kiến |
+|-----------|----------|-------------------|
+| 1. Phân tích và thiết kế | - Phân tích chi tiết yêu cầu<br>- Thiết kế CSDL<br>- Thiết kế giao diện | 2 tuần |
+| 2. Phát triển module Kho hàng | - Tạo migration CSDL<br>- Phát triển model, controller, view<br>- Tích hợp với hệ thống hiện tại | 3 tuần |
+| 3. Phát triển module Nhập hàng | - Tạo migration CSDL<br>- Phát triển model, controller, view<br>- Tích hợp với module kho hàng | 3 tuần |
+| 4. Phát triển module Thu chi | - Tạo migration CSDL<br>- Phát triển model, controller, view<br>- Tích hợp với các module khác | 3 tuần |
+| 5. Phát triển module Chuyển kho | - Tạo migration CSDL<br>- Phát triển model, controller, view<br>- Tích hợp với module kho hàng | 2 tuần |
+| 6. Phát triển báo cáo | - Phát triển báo cáo kho hàng<br>- Phát triển báo cáo tài chính<br>- Phát triển biểu đồ thống kê | 3 tuần |
+| 7. Kiểm thử và sửa lỗi | - Kiểm thử từng module<br>- Kiểm thử tích hợp<br>- Sửa lỗi và tối ưu hóa | 2 tuần |
+| 8. Triển khai và đào tạo | - Triển khai lên môi trường thực tế<br>- Đào tạo người dùng<br>- Theo dõi và hỗ trợ | 2 tuần |
+
+**Tổng thời gian dự kiến: 20 tuần (5 tháng)**
+
+### 7.2. Phân bổ nguồn lực
+
+- **Nhân lực**:
+  - 1-2 Backend Developer (PHP/Yii2)
+  - 1 Frontend Developer (Bootstrap/JavaScript)
+  - 1 QA Engineer (Kiểm thử)
+  - 1 Project Manager
+
+- **Công nghệ bổ sung**:
+  - Chart.js hoặc Highcharts cho biểu đồ
+  - mPDF hoặc TCPDF cho xuất PDF
+  - PHPExcel cho xuất Excel
+
+### 7.3. Rủi ro và giải pháp
+
+| Rủi ro | Mức độ | Giải pháp |
+|--------|--------|-----------|
+| **Độ phức tạp của quy trình kế toán và kho hàng** | Cao | - Phân tích kỹ lưỡng các quy trình nghiệp vụ<br>- Tham khảo ý kiến của chuyên gia kế toán |
+| **Tích hợp với hệ thống hiện tại** | Trung bình | - Thiết kế cẩn thận các điểm tích hợp<br>- Kiểm thử kỹ lưỡng |
+| **Hiệu suất hệ thống khi dữ liệu lớn** | Cao | - Tối ưu hóa truy vấn CSDL<br>- Sử dụng cache và phân trang hiệu quả |
+| **Đào tạo người dùng với chức năng mới** | Trung bình | - Xây dựng tài liệu hướng dẫn chi tiết<br>- Tổ chức đào tạo kỹ lưỡng |
+| **Quản lý thay đổi và xung đột yêu cầu** | Trung bình | - Quản lý phạm vi dự án chặt chẽ<br>- Giao tiếp thường xuyên với các bên liên quan |
+
+## 8. CÔNG NGHỆ VÀ KIẾN TRÚC
+
+### 8.1. Công nghệ bổ sung
+
+- **Báo cáo và Biểu đồ**:
+  - Chart.js: Thư viện JavaScript cho biểu đồ trực quan
+  - Highcharts: Thư viện biểu đồ nâng cao (tùy chọn)
 
 - **Xuất dữ liệu**:
-  - Xuất báo cáo PDF
-  - Xuất dữ liệu Excel
+  - mPDF: Tạo file PDF từ HTML
+  - PHPExcel/PhpSpreadsheet: Tạo và xử lý file Excel
 
-### 6.2. Hướng phát triển tương lai
-- **Tích hợp cổng thanh toán trực tuyến**
-- **Ứng dụng di động** cho nhân viên bán hàng
-- **Cổng thông tin khách hàng** để theo dõi đơn hàng và bảo hành
-- **Tích hợp với các dịch vụ vận chuyển**
-- **Hệ thống quản lý kho nâng cao** với nhiều kho và di chuyển hàng
+- **Tối ưu hóa**:
+  - Yii2 Cache: Bộ nhớ đệm để tăng hiệu suất
+  - AJAX: Tải dữ liệu không đồng bộ
 
-### 6.3. Hướng dẫn phát triển
-1. **Tạo module mới**:
-   ```bash
-   # Tạo controller mới
-   php yii gii/controller --controllerClass=backend\\controllers\\NewController
+### 8.2. Kiến trúc module
 
-   # Tạo model mới
-   php yii gii/model --tableName=new_table --modelClass=NewModel
-
-   # Tạo CRUD
-   php yii gii/crud --modelClass=common\\models\\NewModel --controllerClass=backend\\controllers\\NewController
-   ```
-
-2. **Quy tắc phát triển**:
-   - Tuân thủ mô hình MVC của Yii2
-   - Sử dụng các widget có sẵn của Yii2
-   - Chuẩn hóa code theo PSR-2
-   - Viết comment đầy đủ
-
-## 7. XỬ LÝ SỰ CỐ
-
-### 7.1. Các vấn đề thường gặp
-1. **Lỗi truy cập trang:** Kiểm tra cấu hình URL và mod_rewrite
-2. **Lỗi CSRF:** Đảm bảo form có token CSRF hợp lệ
-3. **Lỗi phân quyền:** Kiểm tra cấu hình RBAC và quyền người dùng
-4. **Lỗi định dạng tiền tệ:** Cài đặt PHP Intl extension
-
-### 7.2. Gỡ lỗi
-- Bật chế độ debug trong `common/config/main-local.php`:
-  ```php
-  'components' => [
-      'log' => [
-          'traceLevel' => YII_DEBUG ? 3 : 0,
-      ],
-  ],
+- **Cấu trúc module**:
   ```
-- Kiểm tra logs trong `backend/runtime/logs/`
+  backend/
+  ├── controllers/
+  │   ├── PurchaseController.php
+  │   ├── FinanceController.php
+  │   ├── WarehouseController.php
+  │   └── TransferController.php
+  ├── views/
+  │   ├── purchase/
+  │   ├── finance/
+  │   ├── warehouse/
+  │   └── transfer/
+  ```
 
-## 8. THÔNG TIN LIÊN HỆ
+- **Mô hình dịch vụ**:
+  ```
+  common/
+  ├── services/
+  │   ├── PurchaseService.php
+  │   ├── FinanceService.php
+  │   ├── WarehouseService.php
+  │   └── TransferService.php
+  ```
 
-- **Người phát triển:** toanlb
-- **Email hỗ trợ:** toan@zplus.vn
-- **Số điện thoại:** 0888.3333.58
-- **Website:** https://zin100.vn
+### 8.3. Tích hợp với Hệ thống hiện tại
 
----
+- **Điều chỉnh bảng Orders**:
+  - Thêm trường warehouse_id để liên kết với kho hàng
 
-*© 2025 [Zin100 Authentic]. Bản quyền đã được bảo hộ.*
+- **Cập nhật quy trình bán hàng**:
+  - Kiểm tra tồn kho theo từng kho
+  - Tự động cập nhật tồn kho khi bán hàng
+
+- **Cập nhật giao diện**:
+  - Thêm menu mới cho các module mới
+  - Điều chỉnh quyền truy cập menu theo RBAC
+
+## 9. YÊU CẦU CHỨC NĂNG CHI TIẾT
+
+### 9.1. Module Nhập hàng
+
+- **Danh sách đơn nhập hàng**:
+  - Hiển thị: Mã đơn, nhà cung cấp, kho nhập, tổng tiền, trạng thái, ngày tạo
+  - Lọc theo: Nhà cung cấp, kho, trạng thái, thời gian
+  - Xuất dữ liệu: Excel, PDF
+
+- **Tạo đơn nhập hàng**:
+  - Chọn nhà cung cấp, kho nhập
+  - Thêm sản phẩm: Mã/tên, số lượng, giá nhập, thuế, chiết khấu
+  - Tính toán tự động: Thành tiền, thuế, chiết khấu, tổng cộng
+  - Thông tin thanh toán: Phương thức, ngày thanh toán
+
+- **Chi tiết đơn nhập hàng**:
+  - Thông tin chung: Mã đơn, nhà cung cấp, người tạo
+  - Danh sách sản phẩm: Mã/tên, số lượng, giá, thuế, chiết khấu, thành tiền
+  - Lịch sử thanh toán: Ngày, phương thức, số tiền
+  - In phiếu nhập kho
+
+### 9.2. Module Thu chi
+
+- **Danh sách phiếu thu/chi**:
+  - Hiển thị: Mã phiếu, loại (thu/chi), danh mục, số tiền, đối tượng, ngày
+  - Lọc theo: Loại, danh mục, thời gian, đối tượng
+  - Xuất dữ liệu: Excel, PDF
+
+- **Tạo phiếu thu/chi**:
+  - Chọn loại: Thu/Chi
+  - Thông tin chung: Số tiền, danh mục, ngày, phương thức thanh toán
+  - Đối tượng liên quan: Khách hàng, nhà cung cấp, đơn hàng, nhập hàng (tùy chọn)
+  - Tải lên chứng từ/hình ảnh (tùy chọn)
+
+- **Quản lý danh mục thu chi**:
+  - Thêm/sửa/xóa danh mục
+  - Cấu trúc phân cấp (cha/con)
+  - Phân loại theo thu/chi/cả hai
+
+### 9.3. Module Kho hàng
+
+- **Danh sách kho hàng**:
+  - Hiển thị: Mã kho, tên kho, địa chỉ, người quản lý, trạng thái
+  - Thêm/sửa/xóa kho hàng
+  - Chỉ định kho mặc định
+
+- **Xem tồn kho**:
+  - Hiển thị: Mã sản phẩm, tên, danh mục, số lượng tồn, giá trị tồn
+  - Lọc theo: Kho, danh mục, trạng thái tồn (hết/sắp hết/còn)
+  - Xuất dữ liệu: Excel, PDF
+
+- **Điều chỉnh tồn kho**:
+  - Chọn kho, sản phẩm
+  - Nhập số lượng điều chỉnh (+/-)
+  - Ghi nhận lý do điều chỉnh
+  - Lưu lịch sử điều chỉnh
+
+### 9.4. Module Chuyển kho
+
+- **Danh sách phiếu chuyển kho**:
+  - Hiển thị: Mã phiếu, kho nguồn, kho đích, trạng thái, ngày tạo
+  - Lọc theo: Kho nguồn, kho đích, trạng thái, thời gian
+  - Xuất dữ liệu: Excel, PDF
+
+- **Tạo phiếu chuyển kho**:
+  - Chọn kho nguồn, kho đích
+  - Thêm sản phẩm: Mã/tên, số lượng chuyển
+  - Kiểm tra tồn kho tự động
+  - Ghi chú cho từng sản phẩm
+
+- **Nhận hàng chuyển kho**:
+  - Hiển thị danh sách sản phẩm cần nhận
+  - Nhập số lượng nhận thực tế
+  - Ghi nhận lý do chênh lệch (nếu có)
+  - Cập nhật trạng thái và tồn kho tự động
+
+### 9.5. Báo cáo nâng cao
+
+- **Báo cáo kho hàng**:
+  - Báo cáo tồn kho theo kho
+  - Báo cáo nhập xuất tồn
+  - Báo cáo giá trị hàng tồn kho
+
+- **Báo cáo tài chính**:
+  - Báo cáo dòng tiền
+  - Báo cáo thu chi theo danh mục
+  - Báo cáo công nợ
+
+- **Biểu đồ trực quan**:
+  - Biểu đồ doanh số
+  - Biểu đồ tồn kho
+  - Biểu đồ thu chi
+
+## 10. TỔNG KẾT
+
+Giai đoạn 2 của dự án Hệ thống Quản lý Bán hàng sẽ tập trung vào phát triển các tính năng nghiệp vụ kế toán và kho hàng, giúp doanh nghiệp quản lý toàn diện hoạt động kinh doanh. Các module mới bao gồm quản lý nhập hàng, quản lý thu chi, quản lý kho hàng và chuyển kho, cùng với các báo cáo nâng cao.
+
+Với kế hoạch triển khai chi tiết và phân bổ nguồn lực hợp lý, dự án dự kiến sẽ hoàn thành trong khoảng 5 tháng. Sau khi hoàn thành giai đoạn 2, hệ thống sẽ cung cấp một giải pháp quản lý kinh doanh toàn diện, từ bán hàng, kho hàng đến kế toán, giúp doanh nghiệp tối ưu hóa hoạt động và tăng cường hiệu quả kinh doanh.
