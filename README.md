@@ -58,3 +58,97 @@ frontend
 vendor/                  contains dependent 3rd-party packages
 environments/            contains environment-based overrides
 ```
+
+Tóm tắt dự án Hệ thống Quản lý Bán hàng
+Tổng quan dự án
+Dự án là một hệ thống quản lý bán hàng sử dụng PHP, Yii2 Framework và MySQL, với giao diện AdminLTE 3. Hệ thống được phát triển để quản lý hoạt động bán hàng, sản phẩm, khách hàng, đơn hàng, nhà cung cấp và bảo hành.
+Checklist các hạng mục
+Đã hoàn thành
+
+✅ Khởi tạo dự án Yii2 Advanced
+✅ Cấu hình kết nối cơ sở dữ liệu MySQL
+✅ Thiết lập giao diện AdminLTE 3 với Bootstrap 4 và Font Awesome 6
+✅ Phát triển module quản lý sản phẩm
+✅ Phát triển module quản lý danh mục sản phẩm
+✅ Phát triển module quản lý đơn vị tính
+✅ Phát triển module quản lý khách hàng
+✅ Phát triển module quản lý đơn hàng
+✅ Phát triển module bán hàng (POS)
+✅ Phát triển module quản lý nhà cung cấp
+✅ Phát triển module quản lý bảo hành
+✅ Thiết lập hệ thống phân quyền RBAC (cơ bản)
+
+Đang tiến hành
+
+⏳ Hoàn thiện module quản lý bảo hành
+
+⏳ Cải thiện tính năng theo dõi lịch sử bảo hành
+⏳ Tối ưu hóa liên kết với module sản phẩm và đơn hàng
+
+
+⏳ Hoàn thiện hệ thống phân quyền RBAC
+
+⏳ Sửa lỗi không truy cập được /rbac/index (đổi tên controller)
+⏳ Áp dụng kiểm tra quyền cho tất cả các controller
+⏳ Cập nhật sidebar để hiển thị menu theo quyền
+
+
+
+Chưa thực hiện
+
+❌ Phát triển module báo cáo và thống kê
+
+❌ Báo cáo doanh thu
+❌ Báo cáo hàng tồn kho
+❌ Báo cáo lợi nhuận
+❌ Báo cáo theo khách hàng
+❌ Biểu đồ trực quan hóa dữ liệu
+
+
+❌ Tích hợp xuất dữ liệu (PDF, Excel)
+❌ Tối ưu hóa hiệu suất
+
+❌ Cải thiện truy vấn cơ sở dữ liệu
+❌ Tối ưu hóa cache
+❌ Tối ưu hóa tài nguyên frontend
+
+
+❌ Kiểm thử và sửa lỗi
+❌ Tạo tài liệu hướng dẫn sử dụng
+
+Hướng phát triển tiếp theo
+
+Hoàn thiện module hiện có:
+
+Sửa lỗi còn tồn tại trong module RBAC và các module khác
+Hoàn thiện giao diện người dùng, cải thiện trải nghiệm
+
+
+Phát triển module báo cáo:
+
+Xây dựng giao diện dashboard tổng quan
+Phát triển các báo cáo chi tiết theo yêu cầu
+
+
+Tối ưu hóa hệ thống:
+
+Tăng tốc độ truy vấn dữ liệu
+Cải thiện hiệu suất tổng thể
+
+
+Kiểm thử:
+
+Kiểm thử các chức năng
+Kiểm thử hiệu suất
+Kiểm thử bảo mật
+
+
+Triển khai:
+
+Chuẩn bị môi trường sản xuất
+Đào tạo người dùng
+Viết tài liệu hướng dẫn
+
+
+
+Dự án đã đạt được tiến độ tốt với việc hoàn thành các module cốt lõi. Các module còn lại cần được phát triển và hoàn thiện trong thời gian tới để đưa hệ thống vào sử dụng.
