@@ -20,7 +20,7 @@ class AppAsset extends AssetBundle
         'https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js',
         'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js',
         'https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js',
-        'js/main.js',
+        'js/pos.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',
@@ -44,7 +44,7 @@ class AppAsset extends AssetBundle
         // Different assets in development and production
         if (YII_ENV_DEV) {
             // Development specific assets
-            $this->js[] = 'js/dev-helpers.js';
+           // $this->js[] = 'js/dev-helpers.js';
         } else {
             // Production specific assets - minified versions if available
             $this->js = array_map(function($item) {

@@ -40,7 +40,7 @@ $csrfToken = Yii::$app->request->csrfToken;
                     const note = $('#note').val();
                     
                     $.ajax({
-                        url: '<?= Url::to(['pos/open-session']) ?>',
+                        url: 'pos/open-session',
                         type: 'POST',
                         data: {
                             cashAmount: cashAmount,
@@ -863,7 +863,6 @@ $(document).ready(function() {
     
     // Open session
     $('#btnOpenSession').on('click', function() {
-        alert('aaaaaaaaaaaaaaaaaa');
         $('#modalOpenSession').modal('show');
     });
     
@@ -877,7 +876,7 @@ $(document).ready(function() {
         const note = $('#note').val();
         
         $.ajax({
-            url: '<?= Url::to(['/pos/open-session']) ?>',
+            url: 'pos/open-session',
             type: 'POST',
             data: {
                 cashAmount: cashAmount,
@@ -910,7 +909,7 @@ $(document).ready(function() {
         $('#productGrid').html('<div class="col-12 text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Đang tải sản phẩm...</p></div>');
         
         $.ajax({
-            url: '<?= Url::to(['/pos/get-products']) ?>',
+            url: 'pos/get-products',
             type: 'GET',
             data: {
                 categoryId: currentCategoryId,
@@ -1068,7 +1067,7 @@ $(document).ready(function() {
         $('#productDetailsContent').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Đang tải thông tin sản phẩm...</p></div>');
         
         $.ajax({
-            url: '<?= Url::to(['/pos/get-product-details']) ?>',
+            url: 'pos/get-product-details',
             type: 'GET',
             data: {
                 id: productId
@@ -1147,7 +1146,7 @@ $(document).ready(function() {
     // Add to cart
     function addToCart(productId, quantity) {
         $.ajax({
-            url: '<?= Url::to(['/pos/add-to-cart']) ?>',
+            url: 'pos/add-to-cart',
             type: 'POST',
             data: {
                 productId: productId,
@@ -1171,7 +1170,7 @@ $(document).ready(function() {
     // Update cart item quantity
     function updateCartItemQuantity(itemKey, quantity, isAbsolute = false) {
         $.ajax({
-            url: '<?= Url::to(['/pos/update-cart']) ?>',
+            url: 'pos/update-cart',
             type: 'POST',
             data: {
                 itemKey: itemKey,
@@ -1194,7 +1193,7 @@ $(document).ready(function() {
     // Remove from cart
     function removeFromCart(itemKey) {
         $.ajax({
-            url: '<?= Url::to(['/pos/remove-from-cart']) ?>',
+            url: 'pos/remove-from-cart',
             type: 'POST',
             data: {
                 itemKey: itemKey,
@@ -1217,7 +1216,7 @@ $(document).ready(function() {
     // Clear cart
     function clearCart() {
         $.ajax({
-            url: '<?= Url::to(['/pos/clear-cart']) ?>',
+            url: 'pos/clear-cart',
             type: 'POST',
             data: {
                 _csrf: '<?= $csrfToken ?>'
@@ -1245,7 +1244,7 @@ $(document).ready(function() {
     // Load cart
     function loadCart() {
         $.ajax({
-            url: '<?= Url::to(['/pos/get-cart']) ?>',
+            url: 'pos/get-cart',
             type: 'GET',
             success: function(response) {
                 if (response.success) {
@@ -1350,7 +1349,7 @@ $(document).ready(function() {
         $('#customerSearchResults').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Đang tìm kiếm khách hàng...</p></div>');
         
         $.ajax({
-            url: '<?= Url::to(['/pos/search-customers']) ?>',
+            url: 'pos/search-customers',
             type: 'GET',
             data: {
                 search: search
@@ -1416,7 +1415,7 @@ $(document).ready(function() {
         };
         
         $.ajax({
-            url: '<?= Url::to(['/pos/add-customer']) ?>',
+            url: 'pos/add-customer',
             type: 'POST',
             data: formData,
             success: function(response) {
@@ -1484,7 +1483,7 @@ $(document).ready(function() {
         }
         
         $.ajax({
-            url: '<?= Url::to(['/pos/apply-discount']) ?>',
+            url: 'pos/apply-discount',
             type: 'POST',
             data: {
                 type: discountType,
@@ -1518,7 +1517,7 @@ $(document).ready(function() {
     // Hold order
     function holdOrder(note) {
         $.ajax({
-            url: '<?= Url::to(['/pos/hold-order']) ?>',
+            url: 'pos/hold-order',
             type: 'POST',
             data: {
                 note: note,
