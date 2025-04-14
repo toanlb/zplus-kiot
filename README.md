@@ -471,11 +471,11 @@ Hệ thống sử dụng cơ sở dữ liệu quan hệ MySQL với các nhóm b
 
 ## 9. THÔNG TIN LIÊN HỆ
 
-- **Người phát triển:** [Tên người phát triển]
-- **Email hỗ trợ:** [Email hỗ trợ]
-- **Số điện thoại:** [Số điện thoại hỗ trợ]
-- **Website:** [Website]
+- **Người phát triển:** toanlb
+- **Email hỗ trợ:** toan@zplus.vn
+- **Số điện thoại:** 0888.3333.58
+- **Website:** https://zin100.vn
 
 ---
 
-*© 2025 [Tên công ty]. Bản quyền đã được bảo hộ.*
+*© 2025 [Zin100 Authentic]. Bản quyền đã được bảo hộ.*
