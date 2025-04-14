@@ -19,6 +19,7 @@ class AppAsset extends AssetBundle
     public $js = [
         'https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js',
         'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js',
         'js/main.js',
     ];
     public $depends = [

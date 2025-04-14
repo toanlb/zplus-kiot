@@ -292,7 +292,7 @@ $(document).ready(function() {
         var note = $('#note').val();
         
         $.ajax({
-            url: '<?= Url::to(['/pos/open-session']) ?>',
+            url: '/pos/session/open',
             type: 'POST',
             data: {
                 cashAmount: cashAmount,
@@ -306,7 +306,7 @@ $(document).ready(function() {
                     
                     // Chuyển đến trang POS sau 1 giây
                     setTimeout(function() {
-                        window.location.href = '<?= Url::to(['/pos/index']) ?>';
+                        window.location.href = '/pos/index';
                     }, 1000);
                 } else {
                     toastr.error(response.message);
