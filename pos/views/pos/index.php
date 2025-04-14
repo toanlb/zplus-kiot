@@ -12,7 +12,7 @@ use yii\helpers\Url;
 $this->title = 'POS Bán Hàng';
 $csrfToken = Yii::$app->request->csrfToken;
 ?>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <div class="pos-main-container">
     <?php if (!$hasActiveSession): ?>
         <div class="container py-5">
@@ -29,7 +29,38 @@ $csrfToken = Yii::$app->request->csrfToken;
                 </div>
             </div>
         </div>
-        
+
+        <script>
+            $(document).ready(function() {
+                $('#btnOpenSession').on('click', function() {
+                    $('#modalOpenSession').modal('show');
+                });
+                $('#btnConfirmOpenSession').on('click', function() {
+                    const cashAmount = $('#cashAmount').val();
+                    const note = $('#note').val();
+                    
+                    $.ajax({
+                        url: '<?= Url::to(['pos/open-session']) ?>',
+                        type: 'POST',
+                        data: {
+                            cashAmount: cashAmount,
+                            note: note,
+                            _csrf: '<?= $csrfToken ?>'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                window.location.reload();
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function() {
+                            alert('Có lỗi xảy ra, vui lòng thử lại.');
+                        }
+                    });
+                });
+            });
+        </script>
         <!-- Modal Mở ca làm việc -->
         <div class="modal fade" id="modalOpenSession" tabindex="-1" role="dialog" aria-labelledby="modalOpenSessionLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -792,15 +823,28 @@ $(document).ready(function() {
     
     // Payment
     $('#btnPayment').on('click', function() {
-        if (cart.length === 0) {
-            toastr.warning('Giỏ hàng trống, không thể thanh toán');
-            return;
-        }
-        
-        // Redirect to payment page
-        window.location.href = '<?= Url::to(['/pos/payment']) ?>';
-    });
+    if (cart.length === 0) {
+        toastr.warning('Giỏ hàng trống, không thể thanh toán');
+        return;
+    }
     
+    // Use AJAX to navigate to payment page
+    $.ajax({
+            url: '/pos/get-payment-url',
+            type: 'GET',
+            success: function(response) {
+                if (response.success && response.url) {
+                    window.location.href = response.url;
+                } else {
+                    toastr.error('Không thể chuyển đến trang thanh toán');
+                }
+            },
+            error: function() {
+                toastr.error('Có lỗi xảy ra khi chuyển đến trang thanh toán');
+            }
+        });
+    });
+        
     // Hold order
     $('#btnHoldOrder').on('click', function() {
         if (cart.length === 0) {
@@ -819,6 +863,7 @@ $(document).ready(function() {
     
     // Open session
     $('#btnOpenSession').on('click', function() {
+        alert('aaaaaaaaaaaaaaaaaa');
         $('#modalOpenSession').modal('show');
     });
     

@@ -930,65 +930,71 @@ class PosController extends Controller
         }
     }
     
-    /**
-     * Đóng phiên làm việc POS
-     */
     public function actionCloseSession()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         
-        $cashAmount = Yii::$app->request->post('cashAmount', 0);
-        $note = Yii::$app->request->post('note', '');
-        
-        // Kiểm tra có phiên đang mở không
-        if (!PosSession::hasActiveSession()) {
+        try {
+            if (!PosSession::hasActiveSession()) {
+                return [
+                    'success' => false,
+                    'message' => 'Không có phiên POS đang mở',
+                ];
+            }
+            
+            $session = PosSession::getActiveSession();
+            $cashAmount = Yii::$app->request->post('cashAmount');
+            $note = Yii::$app->request->post('note', '');
+            
+            if (empty($cashAmount) || !is_numeric($cashAmount)) {
+                return [
+                    'success' => false,
+                    'message' => 'Vui lòng nhập số tiền cuối ca hợp lệ',
+                ];
+            }
+            
+            // Cập nhật thống kê trước khi đóng ca
+            try {
+                $session->updateStats();
+            } catch (\Exception $e) {
+                Yii::error('Error updating stats before closing: ' . $e->getMessage());
+                // Tiếp tục mặc dù có lỗi khi cập nhật thống kê
+            }
+            
+            // Đóng phiên
+            $session->end_time = time();
+            $session->end_amount = $cashAmount;
+            $session->close_note = $note;
+            $session->expected_amount = $session->start_amount + $session->cash_sales;
+            $session->difference = $cashAmount - $session->expected_amount;
+            $session->status = PosSession::STATUS_CLOSED;
+            
+            if ($session->save()) {
+                return [
+                    'success' => true,
+                    'message' => 'Đã đóng ca làm việc thành công',
+                    'session' => [
+                        'id' => $session->id,
+                        'startTime' => Yii::$app->formatter->asDatetime($session->start_time),
+                        'endTime' => Yii::$app->formatter->asDatetime($session->end_time),
+                        'cashSales' => PosSession::formatCurrency($session->cash_sales),
+                        'cardSales' => PosSession::formatCurrency($session->card_sales),
+                        'totalSales' => PosSession::formatCurrency($session->total_sales),
+                        'difference' => PosSession::formatCurrency($session->difference),
+                    ]
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra khi đóng ca làm việc',
+                    'errors' => $session->errors,
+                ];
+            }
+        } catch (\Exception $e) {
+            Yii::error('Error in closeSession: ' . $e->getMessage());
             return [
                 'success' => false,
-                'message' => 'Không có phiên POS đang mở'
-            ];
-        }
-        
-        $session = PosSession::getActiveSession();
-        
-        // Tính toán doanh số, tiền mặt và các khoản thanh toán khác trong phiên
-        $stats = PosSession::calculateSessionStats($session->id);
-        
-        // Cập nhật thông tin đóng phiên
-        $session->end_time = time();
-        $session->end_amount = $cashAmount;
-        $session->cash_sales = $stats['cash_sales'];
-        $session->card_sales = $stats['card_sales'];
-        $session->bank_transfer_sales = $stats['bank_transfer_sales'];
-        $session->other_sales = $stats['other_sales'];
-        $session->total_sales = $stats['total_sales'];
-        $session->expected_amount = $session->start_amount + $stats['cash_sales'];
-        $session->difference = $cashAmount - $session->expected_amount;
-        $session->close_note = $note;
-        $session->status = PosSession::STATUS_CLOSED;
-        
-        if ($session->save()) {
-            return [
-                'success' => true,
-                'message' => 'Đã đóng phiên làm việc',
-                'session' => [
-                    'id' => $session->id,
-                    'start_time' => Yii::$app->formatter->asDatetime($session->start_time),
-                    'end_time' => Yii::$app->formatter->asDatetime($session->end_time),
-                    'start_amount' => $session->start_amount,
-                    'end_amount' => $session->end_amount,
-                    'expected_amount' => $session->expected_amount,
-                    'difference' => $session->difference,
-                    'total_sales' => $session->total_sales,
-                    'cash_sales' => $session->cash_sales,
-                    'card_sales' => $session->card_sales,
-                    'bank_transfer_sales' => $session->bank_transfer_sales,
-                    'other_sales' => $session->other_sales,
-                ]
-            ];
-        } else {
-            return [
-                'success' => false,
-                'message' => 'Không thể đóng phiên làm việc: ' . implode(', ', $session->getErrorSummary(true))
+                'message' => 'Đã xảy ra lỗi khi đóng ca làm việc',
             ];
         }
     }
