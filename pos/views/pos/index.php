@@ -958,7 +958,7 @@ $(document).ready(function() {
                 
                 html += '<div class="col-lg-3 col-md-4 col-sm-6">' +
                         '<div class="card product-card" data-id="' + product.id + '">' +
-                        '<img src="' + product.image_url + '" class="card-img-top" alt="' + product.name + '">' +
+                      //  '<img src="' + product.image_url + '" class="card-img-top" alt="' + product.name + '">' +
                         '<div class="card-body p-2">' +
                         '<h5 class="card-title">' + product.name + '</h5>' +
                         '<p class="card-text">' +
@@ -1429,6 +1429,7 @@ $(document).ready(function() {
                     $('#formNewCustomer')[0].reset();
                     $('#newCustomerForm').slideUp();
                 } else {
+                    alert(response.message);
                     toastr.error(response.message);
                 }
             },

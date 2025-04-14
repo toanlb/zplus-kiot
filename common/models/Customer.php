@@ -41,6 +41,9 @@ use Yii;
 class Customer extends \yii\db\ActiveRecord
 {
 
+    	// Định nghĩa hằng số STATUS_ACTIVE
+    const STATUS_ACTIVE = 1;
+    const STATUS_INACTIVE = 0;
 
     /**
      * {@inheritdoc}
@@ -129,6 +132,53 @@ class Customer extends \yii\db\ActiveRecord
     public function getProductWarranties()
     {
         return $this->hasMany(ProductWarranties::class, ['customer_id' => 'id']);
+    }
+
+    /**
+ * Tự động sinh mã khách hàng khi thêm mới
+ * Format: KH + YYMMDD + số thứ tự (3 chữ số)
+ * Ví dụ: KH250414001, KH250414002,...
+ */
+    public function generateCustomerCode()
+    {
+        // Lấy ngày hiện tại theo định dạng YYMMDD
+        $datePart = date('ymd');
+        
+        // Tìm mã khách hàng có cùng ngày lớn nhất trong DB
+        $lastCustomer = self::find()
+            ->where(['like', 'code', 'KH' . $datePart])
+            ->orderBy(['code' => SORT_DESC])
+            ->one();
+        
+        if ($lastCustomer) {
+            // Nếu tìm thấy, lấy số thứ tự và tăng lên 1
+            $lastCode = $lastCustomer->code;
+            $lastNumber = (int)substr($lastCode, -3); // Lấy 3 số cuối
+            $newNumber = $lastNumber + 1;
+        } else {
+            // Nếu không tìm thấy, bắt đầu từ 1
+            $newNumber = 1;
+        }
+        
+        // Format số thứ tự thành chuỗi 3 chữ số (001, 002, ...)
+        $numberPart = str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        
+        // Tạo mã mới
+        $newCode = 'KH' . $datePart . $numberPart;
+        
+        return $newCode;
+    }
+
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            // Nếu là bản ghi mới và chưa có mã khách hàng
+            if ($insert && empty($this->code)) {
+                $this->code = $this->generateCustomerCode();
+            }
+            return true;
+        }
+        return false;
     }
 
 }

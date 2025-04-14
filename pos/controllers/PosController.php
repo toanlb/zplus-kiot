@@ -130,7 +130,7 @@ class PosController extends Controller
         $perPage = 24; // Số sản phẩm mỗi trang
         
         $query = Product::find()
-            ->where(['status' => Product::STATUS_ACTIVE]);
+            ->where(['is_active' => Product::STATUS_ACTIVE]);
         
         if ($categoryId) {
             $query->andWhere(['category_id' => $categoryId]);
@@ -157,12 +157,11 @@ class PosController extends Controller
                 'id' => $product->id,
                 'name' => $product->name,
                 'code' => $product->code,
-                'price' => $product->price,
-                'discount_price' => $product->discount_price,
-                'unit' => $product->unit ? $product->unit->name : '',
+                'price' => $product->selling_price,
+                'discount_price' => $product->selling_price,
+                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '',
                 'image_url' => $this->getProductImageUrl($product),
-                'in_stock' => $product->stock_quantity,
-                'has_variants' => $product->has_variants,
+                'in_stock' => $product->current_stock,
             ];
         }
         
@@ -189,14 +188,6 @@ class PosController extends Controller
                 'message' => 'Không tìm thấy sản phẩm'
             ];
         }
-        
-        // Lấy thông tin biến thể nếu có
-        $variants = [];
-        if ($product->has_variants) {
-            // Lấy thông tin biến thể từ model phù hợp
-            // Ví dụ: $variants = $product->getVariants();
-        }
-        
         return [
             'success' => true,
             'product' => [
@@ -204,14 +195,14 @@ class PosController extends Controller
                 'name' => $product->name,
                 'code' => $product->code,
                 'barcode' => $product->barcode,
-                'price' => $product->price,
-                'discount_price' => $product->discount_price,
-                'unit' => $product->unit ? $product->unit->name : '',
+                'price' => $product->selling_price, // Changed from price
+                'discount_price' => $product->selling_price, // No discount_price field
+                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '', // Changed from unit
                 'image_url' => $this->getProductImageUrl($product),
                 'description' => $product->description,
-                'in_stock' => $product->stock_quantity,
-                'has_variants' => $product->has_variants,
-                'variants' => $variants,
+                'in_stock' => $product->current_stock, // Changed from stock_quantity
+                'has_variants' => false, // This property doesn't exist in your model
+                'variants' => [], // Just default to empty array since you don't have a variants system
                 'category' => $product->category ? $product->category->name : '',
             ]
         ];
@@ -236,9 +227,9 @@ class PosController extends Controller
                 'message' => 'Không tìm thấy sản phẩm'
             ];
         }
-        
-        // Kiểm tra tồn kho
-        if ($product->stock_quantity < $quantity) {
+    
+        // Check stock
+        if ($product->current_stock < $quantity) { // Changed from stock_quantity
             return [
                 'success' => false,
                 'message' => 'Sản phẩm không đủ số lượng trong kho'
@@ -256,19 +247,18 @@ class PosController extends Controller
             // Cập nhật số lượng
             $cart[$itemKey]['quantity'] += $quantity;
         } else {
-            // Thêm mới vào giỏ hàng
+            // Later in the same function:
             $cart[$itemKey] = [
                 'product_id' => $productId,
-                'variant_id' => $variantId,
                 'name' => $product->name,
                 'code' => $product->code,
-                'price' => $product->discount_price > 0 ? $product->discount_price : $product->price,
-                'original_price' => $product->price,
+                'price' => $product->selling_price, // Changed from discount_price or price
+                'original_price' => $product->selling_price, // Changed from price
                 'quantity' => $quantity,
-                'unit' => $product->unit ? $product->unit->name : '',
+                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '', // Changed from unit
                 'image_url' => $this->getProductImageUrl($product),
                 'discount' => 0,
-                'tax' => 0, // Có thể bổ sung tính thuế nếu cần
+                'tax' => 0, // Add tax default since it's used in calculations
             ];
         }
         
@@ -331,13 +321,13 @@ class PosController extends Controller
             $productId = $cart[$itemKey]['product_id'];
             $product = Product::findOne($productId);
             
-            if ($product && $product->stock_quantity < $quantity) {
+            if ($product && $product->current_stock < $quantity) { // Changed from stock_quantity
                 return [
                     'success' => false,
                     'message' => 'Sản phẩm không đủ số lượng trong kho'
                 ];
             }
-            
+
             // Cập nhật số lượng
             $cart[$itemKey]['quantity'] = $quantity;
         }
@@ -515,13 +505,13 @@ class PosController extends Controller
         
         if ($search) {
             $query->andWhere(['or', 
-                ['like', 'name', $search],
+                ['like', 'full_name', $search],
                 ['like', 'phone', $search],
                 ['like', 'email', $search]
             ]);
         }
         
-        $customers = $query->orderBy(['name' => SORT_ASC])
+        $customers = $query->orderBy(['full_name' => SORT_ASC])
             ->limit(10)
             ->all();
         
@@ -529,12 +519,12 @@ class PosController extends Controller
         foreach ($customers as $customer) {
             $result[] = [
                 'id' => $customer->id,
-                'name' => $customer->name,
+                'name' => $customer->full_name,
                 'phone' => $customer->phone,
                 'email' => $customer->email,
                 'address' => $customer->address,
-                'points' => $customer->points,
-                'debt' => $customer->debt,
+                'total_points' => $customer->total_points,
+                'current_debt' => $customer->current_debt,
             ];
         }
         
@@ -550,7 +540,7 @@ class PosController extends Controller
     public function actionAddCustomer()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        
+
         $name = Yii::$app->request->post('name');
         $phone = Yii::$app->request->post('phone');
         $email = Yii::$app->request->post('email');
@@ -564,17 +554,15 @@ class PosController extends Controller
                 'message' => 'Số điện thoại đã tồn tại trong hệ thống'
             ];
         }
-        
         // Tạo khách hàng mới
         $customer = new Customer();
-        $customer->name = $name;
+        $customer->full_name = $name;
         $customer->phone = $phone;
         $customer->email = $email;
         $customer->address = $address;
         $customer->status = Customer::STATUS_ACTIVE;
         $customer->created_at = time();
-        $customer->created_by = Yii::$app->user->id;
-        
+        $customer->beforeSave(true);  
         if ($customer->save()) {
             // Lưu id khách hàng vào session
             Yii::$app->session->set('pos_customer_id', $customer->id);
@@ -584,18 +572,18 @@ class PosController extends Controller
                 'message' => 'Đã thêm khách hàng mới',
                 'customer' => [
                     'id' => $customer->id,
-                    'name' => $customer->name,
+                    'full_name' => $customer->full_name,
                     'phone' => $customer->phone,
                     'email' => $customer->email,
                     'address' => $customer->address,
-                    'points' => 0,
-                    'debt' => 0,
+                    'total_points' => 0,
+                    'current_debt' => 0,
                 ]
             ];
         } else {
             return [
                 'success' => false,
-                'message' => 'Không thể thêm khách hàng: ' . implode(', ', $customer->getErrorSummary(true))
+                'message' => 'Không thể thêm khách hàng 2: ' . implode(', ', $customer->getErrorSummary(true))
             ];
         }
     }
@@ -814,8 +802,7 @@ class PosController extends Controller
                 // Cập nhật tồn kho
                 $product = Product::findOne($item['product_id']);
                 if ($product) {
-                    $product->stock_quantity -= $item['quantity'];
-                    $product->sales_count += $item['quantity'];
+                    $product->current_stock -= $item['quantity']; // Changed from stock_quantity
                     
                     if (!$product->save()) {
                         throw new \Exception('Không thể cập nhật tồn kho: ' . implode(', ', $product->getErrorSummary(true)));
@@ -1159,7 +1146,7 @@ class PosController extends Controller
             if ($order->customer_id) {
                 $customer = Customer::findOne($order->customer_id);
                 if ($customer) {
-                    $customerName = $customer->name;
+                    $customerName = $customer->full_name;
                 }
             }
             
@@ -1224,7 +1211,7 @@ class PosController extends Controller
                 'price' => $item->price,
                 'original_price' => $item->original_price,
                 'quantity' => $item->quantity,
-                'unit' => $product->unit ? $product->unit->name : '',
+                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '', // Changed from unit
                 'image_url' => $this->getProductImageUrl($product),
                 'discount' => $item->discount,
                 'tax' => $item->tax,
@@ -1307,7 +1294,7 @@ class PosController extends Controller
      */
     protected function getProductImageUrl($product)
     {
-        // Nếu sản phẩm có hình ảnh
+        // If product has getImageUrl method
         if (method_exists($product, 'getImageUrl')) {
             $url = $product->getImageUrl();
             if ($url) {
@@ -1315,7 +1302,7 @@ class PosController extends Controller
             }
         }
         
-        // Hình mặc định nếu không có
+        // Default image if none exists
         return Yii::$app->request->baseUrl . '/images/product-default.png';
     }
 }
