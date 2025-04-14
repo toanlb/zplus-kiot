@@ -6,6 +6,18 @@ class m250413_023113_init_rbac extends Migration
     public function safeUp()
     {
         $auth = Yii::$app->authManager;
+        
+        // Check if RBAC tables exist
+        if (!$this->isRbacInitialized()) {
+            echo "RBAC tables don't exist. Please run RBAC initialization first.\n";
+            return false;
+        }
+        
+        // Check if permissions and roles are already created
+        if ($this->permissionsExist()) {
+            echo "RBAC permissions and roles already exist, skipping creation.\n";
+            return true;
+        }
 
         // Tạo các quyền (permissions)
         
@@ -232,14 +244,95 @@ class m250413_023113_init_rbac extends Migration
         $auth->addChild($cashier, $updateOwnPost);
 
         // Gán vai trò cho người dùng mặc định (ID 1 là admin)
-        $auth->assign($admin, 1);
+        // Kiểm tra nếu người dùng ID 1 tồn tại trước khi gán vai trò
+        $userTable = $this->db->schema->getTableSchema('{{%user}}', true);
+        if ($userTable !== null) {
+            $userExists = (new \yii\db\Query())
+                ->from('{{%user}}')
+                ->where(['id' => 1])
+                ->exists();
+                
+            if ($userExists) {
+                $auth->assign($admin, 1);
+                echo "Assigned admin role to user with ID 1.\n";
+            } else {
+                echo "User with ID 1 does not exist, skipping role assignment.\n";
+            }
+        } else {
+            echo "User table does not exist, skipping role assignment.\n";
+        }
+        
+        echo "RBAC initialization completed successfully.\n";
+        return true;
     }
 
     public function safeDown()
     {
+        if (!$this->isRbacInitialized()) {
+            echo "RBAC tables don't exist, nothing to remove.\n";
+            return true;
+        }
+        
         $auth = Yii::$app->authManager;
         $auth->removeAll();
+        echo "All RBAC permissions and roles have been removed.\n";
 
         return true;
+    }
+    
+    /**
+     * Check if RBAC tables exist
+     * @return bool
+     */
+    private function isRbacInitialized()
+    {
+        $authManager = Yii::$app->authManager;
+        $tableNames = [];
+        
+        if ($authManager instanceof \yii\rbac\DbManager) {
+            $tableNames = [
+                $authManager->itemTable,
+                $authManager->itemChildTable,
+                $authManager->assignmentTable,
+                $authManager->ruleTable
+            ];
+        }
+        
+        foreach ($tableNames as $tableName) {
+            if ($this->db->schema->getTableSchema($tableName, true) === null) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Check if key permissions already exist to avoid duplicate creation
+     * @return bool
+     */
+    private function permissionsExist()
+    {
+        $auth = Yii::$app->authManager;
+        
+        // Check for a few key permissions to determine if initialization has already been done
+        $keyPermissions = ['viewProduct', 'createProduct', 'manageRbac'];
+        
+        foreach ($keyPermissions as $permissionName) {
+            if ($auth->getPermission($permissionName) !== null) {
+                return true;
+            }
+        }
+        
+        // Also check if roles exist
+        $keyRoles = ['admin', 'manager', 'staff', 'cashier'];
+        
+        foreach ($keyRoles as $roleName) {
+            if ($auth->getRole($roleName) !== null) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

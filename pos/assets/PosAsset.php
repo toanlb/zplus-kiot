@@ -12,7 +12,9 @@ class PosAsset extends AssetBundle
     public $baseUrl = '@web';
     public $css = [
         'css/pos.css',
+        'css/site.css',
         'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
+        'https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css',
         'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css',
     ];
     public $js = [

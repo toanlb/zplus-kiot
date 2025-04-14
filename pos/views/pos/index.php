@@ -882,7 +882,6 @@ $(document).ready(function() {
             error: function() {
                 toastr.error('Có lỗi xảy ra khi tải sản phẩm.');
                 $('#productGrid').html('<div class="col-12 text-center py-4"><i class="fas fa-exclamation-triangle fa-2x text-warning"></i><p class="mt-2">Không thể tải sản phẩm. Vui lòng thử lại sau.</p></div>');
-                }
             }
         });
     }
@@ -900,70 +899,68 @@ $(document).ready(function() {
         let html = '';
         
         if (viewMode === 'grid') {
-            products.forEach(function(product) {
+            for (let i = 0; i < products.length; i++) {
+                let product = products[i];
                 let priceHtml = '';
                 if (product.discount_price > 0) {
-                    var discountPrice = formatCurrency(product.discount_price);
-                    var originalPrice = formatCurrency(product.price);
+                    let discountPrice = formatCurrency(product.discount_price);
+                    let originalPrice = formatCurrency(product.price);
                     priceHtml = '<span class="product-price">' + discountPrice + '</span>' +
                                 '<span class="product-original-price">' + originalPrice + '</span>';
                 } else {
-                    var normalPrice = formatCurrency(product.price);
+                    let normalPrice = formatCurrency(product.price);
                     priceHtml = '<span class="product-price">' + normalPrice + '</span>';
                 }
                 
-                html += `
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="card product-card" data-id="${product.id}">
-                            <img src="${product.image_url}" class="card-img-top" alt="${product.name}">
-                            <div class="card-body p-2">
-                                <h5 class="card-title">${product.name}</h5>
-                                <p class="card-text">
-                                    ${priceHtml}
-                                    <br>
-                                    <small class="text-muted">Còn ${product.in_stock} ${product.unit}</small>
-                                </p>
-                                <button class="btn btn-sm btn-primary btn-block btn-add-to-cart">
-                                    <i class="fas fa-plus"></i> Thêm vào giỏ
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
+                html += '<div class="col-lg-3 col-md-4 col-sm-6">' +
+                        '<div class="card product-card" data-id="' + product.id + '">' +
+                        '<img src="' + product.image_url + '" class="card-img-top" alt="' + product.name + '">' +
+                        '<div class="card-body p-2">' +
+                        '<h5 class="card-title">' + product.name + '</h5>' +
+                        '<p class="card-text">' +
+                        priceHtml +
+                        '<br>' +
+                        '<small class="text-muted">Còn ' + product.in_stock + ' ' + product.unit + '</small>' +
+                        '</p>' +
+                        '<button class="btn btn-sm btn-primary btn-block btn-add-to-cart">' +
+                        '<i class="fas fa-plus"></i> Thêm vào giỏ' +
+                        '</button>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+            }
         } else {
             // List view
             html = '<div class="col-12"><div class="list-group">';
             
-            products.forEach(function(product) {
+            for (let i = 0; i < products.length; i++) {
+                let product = products[i];
                 let priceHtml = '';
                 if (product.discount_price > 0) {
-                    var discountPrice = formatCurrency(product.discount_price);
-                    var originalPrice = formatCurrency(product.price);
+                    let discountPrice = formatCurrency(product.discount_price);
+                    let originalPrice = formatCurrency(product.price);
                     priceHtml = '<span class="product-price">' + discountPrice + '</span>' +
                                 '<span class="product-original-price">' + originalPrice + '</span>';
                 } else {
-                    var normalPrice = formatCurrency(product.price);
+                    let normalPrice = formatCurrency(product.price);
                     priceHtml = '<span class="product-price">' + normalPrice + '</span>';
                 }
                 
-                html += `
-                    <div class="list-group-item list-group-item-action product-card" data-id="${product.id}">
-                        <div class="d-flex w-100 justify-content-between align-items-center">
-                            <div>
-                                <h5 class="mb-1">${product.name}</h5>
-                                <small>Mã: ${product.code} | Còn ${product.in_stock} ${product.unit}</small>
-                            </div>
-                            <div class="text-right">
-                                <div>${priceHtml}</div>
-                                <button class="btn btn-sm btn-primary mt-2 btn-add-to-cart">
-                                    <i class="fas fa-plus"></i> Thêm vào giỏ
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
+                html += '<div class="list-group-item list-group-item-action product-card" data-id="' + product.id + '">' +
+                        '<div class="d-flex w-100 justify-content-between align-items-center">' +
+                        '<div>' +
+                        '<h5 class="mb-1">' + product.name + '</h5>' +
+                        '<small>Mã: ' + product.code + ' | Còn ' + product.in_stock + ' ' + product.unit + '</small>' +
+                        '</div>' +
+                        '<div class="text-right">' +
+                        '<div>' + priceHtml + '</div>' +
+                        '<button class="btn btn-sm btn-primary mt-2 btn-add-to-cart">' +
+                        '<i class="fas fa-plus"></i> Thêm vào giỏ' +
+                        '</button>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+            }
             
             html += '</div></div>';
         }
@@ -982,34 +979,28 @@ $(document).ready(function() {
         let html = '';
         
         // Previous button
-        html += `
-            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-        `;
+        html += '<li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '">' +
+                '<a class="page-link" href="#" data-page="' + (currentPage - 1) + '" aria-label="Previous">' +
+                '<span aria-hidden="true">&laquo;</span>' +
+                '</a>' +
+                '</li>';
         
         // Pages
         const startPage = Math.max(1, currentPage - 2);
         const endPage = Math.min(totalPages, startPage + 4);
         
         for (let i = startPage; i <= endPage; i++) {
-            html += `
-                <li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i}</a>
-                </li>
-            `;
+            html += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '">' +
+                    '<a class="page-link" href="#" data-page="' + i + '">' + i + '</a>' +
+                    '</li>';
         }
         
         // Next button
-        html += `
-            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-        `;
+        html += '<li class="page-item ' + (currentPage === totalPages ? 'disabled' : '') + '">' +
+                '<a class="page-link" href="#" data-page="' + (currentPage + 1) + '" aria-label="Next">' +
+                '<span aria-hidden="true">&raquo;</span>' +
+                '</a>' +
+                '</li>';
         
         $('#pagination').html(html);
         
@@ -1056,55 +1047,53 @@ $(document).ready(function() {
     function renderProductDetails(product) {
         let priceHtml = '';
         if (product.discount_price > 0) {
-            var discountPrice = formatCurrency(product.discount_price);
-            var originalPrice = formatCurrency(product.price);
+            let discountPrice = formatCurrency(product.discount_price);
+            let originalPrice = formatCurrency(product.price);
             priceHtml = '<span class="text-success font-weight-bold">' + discountPrice + '</span>' +
                         '<span class="text-danger text-strikethrough ml-2">' + originalPrice + '</span>';
         } else {
-            var normalPrice = formatCurrency(product.price);
+            let normalPrice = formatCurrency(product.price);
             priceHtml = '<span class="text-success font-weight-bold">' + normalPrice + '</span>';
         }
         
-        let html = `
-            <div class="row">
-                <div class="col-md-5">
-                    <img src="${product.image_url}" class="img-fluid rounded" alt="${product.name}">
-                </div>
-                <div class="col-md-7">
-                    <h5>${product.name}</h5>
-                    <p class="text-muted">Mã: ${product.code}</p>
-                    
-                    <div class="mb-3">
-                        ${priceHtml}
-                    </div>
-                    
-                    <table class="table table-sm table-bordered">
-                        <tr>
-                            <th>Danh mục</th>
-                            <td>${product.category}</td>
-                        </tr>
-                        <tr>
-                            <th>Đơn vị</th>
-                            <td>${product.unit}</td>
-                        </tr>
-                        <tr>
-                            <th>Tồn kho</th>
-                            <td>${product.in_stock}</td>
-                        </tr>
-                    </table>
-                    
-                    <div class="form-group">
-                        <label for="productDetailsQuantity">Số lượng:</label>
-                        <input type="number" class="form-control" id="productDetailsQuantity" value="1" min="1" max="${product.in_stock}">
-                    </div>
-                    
-                    <div class="product-description mt-3">
-                        <h6>Mô tả sản phẩm</h6>
-                        <p>${product.description || 'Không có mô tả'}</p>
-                    </div>
-                </div>
-            </div>
-        `;
+        let html = '<div class="row">' +
+                '<div class="col-md-5">' +
+                '<img src="' + product.image_url + '" class="img-fluid rounded" alt="' + product.name + '">' +
+                '</div>' +
+                '<div class="col-md-7">' +
+                '<h5>' + product.name + '</h5>' +
+                '<p class="text-muted">Mã: ' + product.code + '</p>' +
+                
+                '<div class="mb-3">' +
+                priceHtml +
+                '</div>' +
+                
+                '<table class="table table-sm table-bordered">' +
+                '<tr>' +
+                '<th>Danh mục</th>' +
+                '<td>' + product.category + '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<th>Đơn vị</th>' +
+                '<td>' + product.unit + '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<th>Tồn kho</th>' +
+                '<td>' + product.in_stock + '</td>' +
+                '</tr>' +
+                '</table>' +
+                
+                '<div class="form-group">' +
+                '<label for="productDetailsQuantity">Số lượng:</label>' +
+                '<input type="number" class="form-control" id="productDetailsQuantity" value="1" min="1" max="' + product.in_stock + '">' +
+                '</div>' +
+                
+                '<div class="product-description mt-3">' +
+                '<h6>Mô tả sản phẩm</h6>' +
+                '<p>' + (product.description || 'Không có mô tả') + '</p>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
         
         $('#productDetailsContent').html(html);
         $('#modalProductDetailsLabel').text(product.name);
@@ -1266,38 +1255,39 @@ $(document).ready(function() {
         let totalItems = 0;
         let html = '';
         
-        for (const [itemKey, item] of Object.entries(cart)) {
-            totalItems += item.quantity;
-            
-            html += `
-                <tr class="cart-item-row" data-key="${itemKey}">
-                    <td>
-                        <div class="d-flex">
-                            <div class="cart-item-info">
-                                <div class="font-weight-bold">${item.name}</div>
-                                <small class="text-muted">${item.code}</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="text-right">${formatCurrency(item.price)}</td>
-                    <td>
-                        <div class="input-group input-group-sm">
-                            <div class="input-group-prepend">
-                                <button class="btn btn-outline-secondary btn-quantity-minus" type="button">-</button>
-                            </div>
-                            <input type="text" class="form-control cart-quantity" value="${item.quantity}">
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary btn-quantity-plus" type="button">+</button>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="text-right">
-                        <button class="btn btn-sm btn-outline-danger btn-remove-item">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
+        for (const itemKey in cart) {
+            if (cart.hasOwnProperty(itemKey)) {
+                const item = cart[itemKey];
+                totalItems += item.quantity;
+                
+                html += '<tr class="cart-item-row" data-key="' + itemKey + '">' +
+                        '<td>' +
+                        '<div class="d-flex">' +
+                        '<div class="cart-item-info">' +
+                        '<div class="font-weight-bold">' + item.name + '</div>' +
+                        '<small class="text-muted">' + item.code + '</small>' +
+                        '</div>' +
+                        '</div>' +
+                        '</td>' +
+                        '<td class="text-right">' + formatCurrency(item.price) + '</td>' +
+                        '<td>' +
+                        '<div class="input-group input-group-sm">' +
+                        '<div class="input-group-prepend">' +
+                        '<button class="btn btn-outline-secondary btn-quantity-minus" type="button">-</button>' +
+                        '</div>' +
+                        '<input type="text" class="form-control cart-quantity" value="' + item.quantity + '">' +
+                        '<div class="input-group-append">' +
+                        '<button class="btn btn-outline-secondary btn-quantity-plus" type="button">+</button>' +
+                        '</div>' +
+                        '</div>' +
+                        '</td>' +
+                        '<td class="text-right">' +
+                        '<button class="btn btn-sm btn-outline-danger btn-remove-item">' +
+                        '<i class="fas fa-trash"></i>' +
+                        '</button>' +
+                        '</td>' +
+                        '</tr>';
+            }
         }
         
         $('#cartItemsList').html(html);
@@ -1342,29 +1332,28 @@ $(document).ready(function() {
         
         let html = '<div class="list-group">';
         
-        customers.forEach(function(customer) {
-            html += `
-                <div class="list-group-item list-group-item-action">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">${customer.name}</h5>
-                        <button class="btn btn-sm btn-primary btn-select-customer" 
-                                data-id="${customer.id}" 
-                                data-name="${customer.name}">
-                            <i class="fas fa-check"></i> Chọn
-                        </button>
-                    </div>
-                    <p class="mb-1">
-                        <i class="fas fa-phone mr-1"></i> ${customer.phone || 'N/A'}
-                        <br>
-                        <i class="fas fa-envelope mr-1"></i> ${customer.email || 'N/A'}
-                    </p>
-                    <small>
-                        <span class="badge badge-info">Điểm: ${customer.points || 0}</span>
-                        <span class="badge badge-warning">Công nợ: ${formatCurrency(customer.debt || 0)}</span>
-                    </small>
-                </div>
-            `;
-        });
+        for (let i = 0; i < customers.length; i++) {
+            let customer = customers[i];
+            html += '<div class="list-group-item list-group-item-action">' +
+                    '<div class="d-flex w-100 justify-content-between">' +
+                    '<h5 class="mb-1">' + customer.name + '</h5>' +
+                    '<button class="btn btn-sm btn-primary btn-select-customer" ' +
+                    'data-id="' + customer.id + '" ' +
+                    'data-name="' + customer.name + '">' +
+                    '<i class="fas fa-check"></i> Chọn' +
+                    '</button>' +
+                    '</div>' +
+                    '<p class="mb-1">' +
+                    '<i class="fas fa-phone mr-1"></i> ' + (customer.phone || 'N/A') +
+                    '<br>' +
+                    '<i class="fas fa-envelope mr-1"></i> ' + (customer.email || 'N/A') +
+                    '</p>' +
+                    '<small>' +
+                    '<span class="badge badge-info">Điểm: ' + (customer.points || 0) + '</span>' +
+                    '<span class="badge badge-warning">Công nợ: ' + formatCurrency(customer.debt || 0) + '</span>' +
+                    '</small>' +
+                    '</div>';
+        }
         
         html += '</div>';
         

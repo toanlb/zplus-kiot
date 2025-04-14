@@ -7,8 +7,8 @@ use pos\assets\PosAsset;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use pos\models\PosSession;
-
 PosAsset::register($this);
+
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
