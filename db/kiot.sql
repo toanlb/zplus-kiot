@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th4 13, 2025 lúc 02:28 PM
+-- Thời gian đã tạo: Th4 14, 2025 lúc 06:37 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `toanlb`
+-- Cơ sở dữ liệu: `kiot`
 --
 
 -- --------------------------------------------------------
@@ -131,6 +131,7 @@ CREATE TABLE `orders` (
   `code` varchar(50) NOT NULL,
   `return_code` varchar(50) DEFAULT NULL,
   `customer_id` int(11) DEFAULT NULL,
+  `pos_session_id` int(11) DEFAULT NULL,
   `total_amount` decimal(15,2) NOT NULL,
   `discount_amount` decimal(15,2) DEFAULT 0.00,
   `final_amount` decimal(15,2) NOT NULL,
@@ -217,6 +218,65 @@ CREATE TABLE `order_payments` (
   `voucher_code` varchar(50) DEFAULT NULL,
   `voucher_amount` decimal(15,2) DEFAULT 0.00,
   `additional_fee` decimal(15,2) DEFAULT 0.00
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `pos_offline_transactions`
+--
+
+CREATE TABLE `pos_offline_transactions` (
+  `id` int(11) NOT NULL,
+  `offline_id` varchar(50) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `transaction_data` text NOT NULL,
+  `status` smallint(6) NOT NULL DEFAULT 1,
+  `error_message` text DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `processed_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `pos_session`
+--
+
+CREATE TABLE `pos_session` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `start_time` int(11) NOT NULL,
+  `end_time` int(11) DEFAULT NULL,
+  `start_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `end_amount` decimal(12,2) DEFAULT NULL,
+  `expected_amount` decimal(12,2) DEFAULT NULL,
+  `difference` decimal(12,2) DEFAULT NULL,
+  `cash_sales` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `card_sales` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `bank_transfer_sales` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `other_sales` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `total_sales` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `current_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `note` text DEFAULT NULL,
+  `close_note` text DEFAULT NULL,
+  `status` smallint(6) NOT NULL DEFAULT 1,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `pos_user_preferences`
+--
+
+CREATE TABLE `pos_user_preferences` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `preference_key` varchar(100) NOT NULL,
+  `preference_value` text DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -365,6 +425,7 @@ CREATE TABLE `user` (
   `username` varchar(255) NOT NULL,
   `auth_key` varchar(32) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
+  `pin` varchar(255) DEFAULT NULL,
   `password_reset_token` varchar(255) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
   `status` smallint(6) NOT NULL DEFAULT 10,
@@ -446,7 +507,8 @@ ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `code` (`code`),
   ADD KEY `idx_order_code` (`code`),
-  ADD KEY `idx_order_customer` (`customer_id`);
+  ADD KEY `idx_order_customer` (`customer_id`),
+  ADD KEY `idx-orders-pos_session_id` (`pos_session_id`);
 
 --
 -- Chỉ mục cho bảng `order_details`
@@ -469,6 +531,30 @@ ALTER TABLE `order_items`
 ALTER TABLE `order_payments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk-order_payments-order_id` (`order_id`);
+
+--
+-- Chỉ mục cho bảng `pos_offline_transactions`
+--
+ALTER TABLE `pos_offline_transactions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx-pos_offline_transactions-offline_id` (`offline_id`),
+  ADD KEY `idx-pos_offline_transactions-user_id` (`user_id`),
+  ADD KEY `idx-pos_offline_transactions-status` (`status`);
+
+--
+-- Chỉ mục cho bảng `pos_session`
+--
+ALTER TABLE `pos_session`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx-pos_session-user_id` (`user_id`),
+  ADD KEY `idx-pos_session-status` (`status`);
+
+--
+-- Chỉ mục cho bảng `pos_user_preferences`
+--
+ALTER TABLE `pos_user_preferences`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx-pos_user_preferences-user_id-preference_key` (`user_id`,`preference_key`);
 
 --
 -- Chỉ mục cho bảng `products`
@@ -574,6 +660,24 @@ ALTER TABLE `order_payments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT cho bảng `pos_offline_transactions`
+--
+ALTER TABLE `pos_offline_transactions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `pos_session`
+--
+ALTER TABLE `pos_session`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `pos_user_preferences`
+--
+ALTER TABLE `pos_user_preferences`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT cho bảng `products`
 --
 ALTER TABLE `products`
@@ -648,7 +752,8 @@ ALTER TABLE `auth_item_child`
 -- Các ràng buộc cho bảng `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `fk-orders-customer_id` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `fk-orders-customer_id` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk-orders-pos_session_id` FOREIGN KEY (`pos_session_id`) REFERENCES `pos_session` (`id`) ON DELETE SET NULL;
 
 --
 -- Các ràng buộc cho bảng `order_details`
@@ -668,6 +773,24 @@ ALTER TABLE `order_items`
 --
 ALTER TABLE `order_payments`
   ADD CONSTRAINT `fk-order_payments-order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `pos_offline_transactions`
+--
+ALTER TABLE `pos_offline_transactions`
+  ADD CONSTRAINT `fk-pos_offline_transactions-user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `pos_session`
+--
+ALTER TABLE `pos_session`
+  ADD CONSTRAINT `fk-pos_session-user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `pos_user_preferences`
+--
+ALTER TABLE `pos_user_preferences`
+  ADD CONSTRAINT `fk-pos_user_preferences-user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `products`
