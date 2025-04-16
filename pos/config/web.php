@@ -8,6 +8,14 @@ $config = [
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'pos\controllers',
+    'container' => [
+        'definitions' => [
+            \kartik\base\BootstrapInterface::class => [
+                'class' => \kartik\base\BootstrapInterface::class,
+                'bsVersion' => '4.2'  // Chọn phiên bản Bootstrap (4.x)
+            ],
+        ],
+    ],
     'components' => [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation

@@ -13,6 +13,7 @@ use common\models\Customer;
 use common\models\Order;
 use common\models\OrderItem;
 use common\models\OrderPayment;
+use common\models\TransactionHistory;
 
 /**
  * POS controller
@@ -29,16 +30,16 @@ class PosController extends Controller
                 'class' => AccessControl::class,
                 'rules' => [
                     [
-                        'actions' => ['index', 'get-products', 'get-categories', 'add-to-cart', 
-                                     'update-cart', 'remove-from-cart', 'get-cart', 'clear-cart',
-                                     'search-customers', 'add-customer', 'payment', 'complete-order',
-                                     'get-product-details', 'apply-discount', 'save-order',
-                                     'open-session', 'close-session', 'get-session-info',
-                                     'hold-order', 'get-held-orders', 'resume-order'],
+                        'actions' => ['index', 'get-products', 'get-product-details', 
+                                     'add-to-cart', 'update-cart', 'remove-from-cart', 
+                                     'get-cart', 'clear-cart', 'search-customers', 
+                                     'add-customer', 'apply-discount', 'hold-order',
+                                     'get-payment-url', 'open-session', 'get-session-info',
+                                     'payment', 'complete-order', 'close-session', 
+                                     'get-categories', 'get-held-orders', 'resume-order'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            // Sử dụng phương thức checkPosAccess tương tự như trong SiteController
                             return self::checkPosAccess();
                         }
                     ],
@@ -52,12 +53,11 @@ class PosController extends Controller
                     'remove-from-cart' => ['post'],
                     'clear-cart' => ['post'],
                     'add-customer' => ['post'],
-                    'complete-order' => ['post'],
                     'apply-discount' => ['post'],
-                    'save-order' => ['post'],
-                    'open-session' => ['post'],
-                    'close-session' => ['post'],
                     'hold-order' => ['post'],
+                    'open-session' => ['post'],
+                    'complete-order' => ['post'],
+                    'close-session' => ['post'],
                     'resume-order' => ['post'],
                 ],
             ],
@@ -188,6 +188,7 @@ class PosController extends Controller
                 'message' => 'Không tìm thấy sản phẩm'
             ];
         }
+        
         return [
             'success' => true,
             'product' => [
@@ -195,14 +196,14 @@ class PosController extends Controller
                 'name' => $product->name,
                 'code' => $product->code,
                 'barcode' => $product->barcode,
-                'price' => $product->selling_price, // Changed from price
-                'discount_price' => $product->selling_price, // No discount_price field
-                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '', // Changed from unit
+                'price' => $product->selling_price,
+                'discount_price' => $product->selling_price,
+                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '',
                 'image_url' => $this->getProductImageUrl($product),
                 'description' => $product->description,
-                'in_stock' => $product->current_stock, // Changed from stock_quantity
-                'has_variants' => false, // This property doesn't exist in your model
-                'variants' => [], // Just default to empty array since you don't have a variants system
+                'in_stock' => $product->current_stock,
+                'has_variants' => false,
+                'variants' => [],
                 'category' => $product->category ? $product->category->name : '',
             ]
         ];
@@ -229,7 +230,7 @@ class PosController extends Controller
         }
     
         // Check stock
-        if ($product->current_stock < $quantity) { // Changed from stock_quantity
+        if ($product->current_stock < $quantity) {
             return [
                 'success' => false,
                 'message' => 'Sản phẩm không đủ số lượng trong kho'
@@ -247,50 +248,24 @@ class PosController extends Controller
             // Cập nhật số lượng
             $cart[$itemKey]['quantity'] += $quantity;
         } else {
-            // Later in the same function:
             $cart[$itemKey] = [
                 'product_id' => $productId,
                 'name' => $product->name,
                 'code' => $product->code,
-                'price' => $product->selling_price, // Changed from discount_price or price
-                'original_price' => $product->selling_price, // Changed from price
+                'price' => $product->selling_price,
+                'original_price' => $product->selling_price,
                 'quantity' => $quantity,
-                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '', // Changed from unit
+                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '',
                 'image_url' => $this->getProductImageUrl($product),
                 'discount' => 0,
-                'tax' => 0, // Add tax default since it's used in calculations
+                'tax' => 0,
             ];
         }
         
         // Lưu giỏ hàng vào session
         Yii::$app->session->set('pos_cart', $cart);
         
-        // Tính toán tổng giỏ hàng
-        $totalQuantity = 0;
-        $subtotal = 0;
-        $discount = 0;
-        $tax = 0;
-        
-        foreach ($cart as $item) {
-            $totalQuantity += $item['quantity'];
-            $itemTotal = $item['price'] * $item['quantity'];
-            $subtotal += $itemTotal;
-            $discount += $item['discount'] * $item['quantity'];
-            $tax += $item['tax'] * $item['quantity'];
-        }
-        
-        $grandTotal = $subtotal - $discount + $tax;
-        
-        return [
-            'success' => true,
-            'message' => 'Đã thêm sản phẩm vào giỏ hàng',
-            'cart' => $cart,
-            'totalQuantity' => $totalQuantity,
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'tax' => $tax,
-            'grandTotal' => $grandTotal,
-        ];
+        return $this->calculateCartTotals($cart);
     }
     
     /**
@@ -302,6 +277,7 @@ class PosController extends Controller
         
         $itemKey = Yii::$app->request->post('itemKey');
         $quantity = Yii::$app->request->post('quantity');
+        $setQuantity = Yii::$app->request->post('setQuantity', 0);
         
         // Lấy giỏ hàng từ session
         $cart = Yii::$app->session->get('pos_cart', []);
@@ -313,54 +289,52 @@ class PosController extends Controller
             ];
         }
         
-        // Nếu số lượng = 0, xóa sản phẩm khỏi giỏ hàng
-        if ($quantity <= 0) {
-            unset($cart[$itemKey]);
-        } else {
-            // Kiểm tra tồn kho
-            $productId = $cart[$itemKey]['product_id'];
-            $product = Product::findOne($productId);
-            
-            if ($product && $product->current_stock < $quantity) { // Changed from stock_quantity
-                return [
-                    'success' => false,
-                    'message' => 'Sản phẩm không đủ số lượng trong kho'
-                ];
+        if ($setQuantity == 1) {
+            // Đặt số lượng cụ thể
+            if ($quantity <= 0) {
+                unset($cart[$itemKey]);
+            } else {
+                // Kiểm tra tồn kho
+                $productId = $cart[$itemKey]['product_id'];
+                $product = Product::findOne($productId);
+                
+                if ($product && $product->current_stock < $quantity) {
+                    return [
+                        'success' => false,
+                        'message' => 'Sản phẩm không đủ số lượng trong kho'
+                    ];
+                }
+                
+                // Cập nhật số lượng
+                $cart[$itemKey]['quantity'] = $quantity;
             }
-
-            // Cập nhật số lượng
-            $cart[$itemKey]['quantity'] = $quantity;
+        } else {
+            // Tăng/giảm số lượng
+            $newQuantity = $cart[$itemKey]['quantity'] + $quantity;
+            
+            if ($newQuantity <= 0) {
+                unset($cart[$itemKey]);
+            } else {
+                // Kiểm tra tồn kho
+                $productId = $cart[$itemKey]['product_id'];
+                $product = Product::findOne($productId);
+                
+                if ($product && $product->current_stock < $newQuantity) {
+                    return [
+                        'success' => false,
+                        'message' => 'Sản phẩm không đủ số lượng trong kho'
+                    ];
+                }
+                
+                // Cập nhật số lượng
+                $cart[$itemKey]['quantity'] = $newQuantity;
+            }
         }
         
         // Lưu giỏ hàng vào session
         Yii::$app->session->set('pos_cart', $cart);
         
-        // Tính toán tổng giỏ hàng
-        $totalQuantity = 0;
-        $subtotal = 0;
-        $discount = 0;
-        $tax = 0;
-        
-        foreach ($cart as $item) {
-            $totalQuantity += $item['quantity'];
-            $itemTotal = $item['price'] * $item['quantity'];
-            $subtotal += $itemTotal;
-            $discount += $item['discount'] * $item['quantity'];
-            $tax += $item['tax'] * $item['quantity'];
-        }
-        
-        $grandTotal = $subtotal - $discount + $tax;
-        
-        return [
-            'success' => true,
-            'message' => 'Đã cập nhật giỏ hàng',
-            'cart' => $cart,
-            'totalQuantity' => $totalQuantity,
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'tax' => $tax,
-            'grandTotal' => $grandTotal,
-        ];
+        return $this->calculateCartTotals($cart);
     }
     
     /**
@@ -388,32 +362,7 @@ class PosController extends Controller
         // Lưu giỏ hàng vào session
         Yii::$app->session->set('pos_cart', $cart);
         
-        // Tính toán tổng giỏ hàng
-        $totalQuantity = 0;
-        $subtotal = 0;
-        $discount = 0;
-        $tax = 0;
-        
-        foreach ($cart as $item) {
-            $totalQuantity += $item['quantity'];
-            $itemTotal = $item['price'] * $item['quantity'];
-            $subtotal += $itemTotal;
-            $discount += $item['discount'] * $item['quantity'];
-            $tax += $item['tax'] * $item['quantity'];
-        }
-        
-        $grandTotal = $subtotal - $discount + $tax;
-        
-        return [
-            'success' => true,
-            'message' => 'Đã xóa sản phẩm khỏi giỏ hàng',
-            'cart' => $cart,
-            'totalQuantity' => $totalQuantity,
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'tax' => $tax,
-            'grandTotal' => $grandTotal,
-        ];
+        return $this->calculateCartTotals($cart);
     }
     
     /**
@@ -426,21 +375,7 @@ class PosController extends Controller
         // Lấy giỏ hàng từ session
         $cart = Yii::$app->session->get('pos_cart', []);
         
-        // Tính toán tổng giỏ hàng
-        $totalQuantity = 0;
-        $subtotal = 0;
-        $discount = 0;
-        $tax = 0;
-        
-        foreach ($cart as $item) {
-            $totalQuantity += $item['quantity'];
-            $itemTotal = $item['price'] * $item['quantity'];
-            $subtotal += $itemTotal;
-            $discount += $item['discount'] * $item['quantity'];
-            $tax += $item['tax'] * $item['quantity'];
-        }
-        
-        $grandTotal = $subtotal - $discount + $tax;
+        $response = $this->calculateCartTotals($cart);
         
         // Lấy thông tin khách hàng đã chọn nếu có
         $customerId = Yii::$app->session->get('pos_customer_id');
@@ -457,19 +392,11 @@ class PosController extends Controller
                     'points' => $customer->points,
                     'debt' => $customer->debt,
                 ];
+                $response['customer'] = $customerInfo;
             }
         }
         
-        return [
-            'success' => true,
-            'cart' => $cart,
-            'totalQuantity' => $totalQuantity,
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'tax' => $tax,
-            'grandTotal' => $grandTotal,
-            'customer' => $customerInfo,
-        ];
+        return $response;
     }
     
     /**
@@ -523,8 +450,8 @@ class PosController extends Controller
                 'phone' => $customer->phone,
                 'email' => $customer->email,
                 'address' => $customer->address,
-                'total_points' => $customer->total_points,
-                'current_debt' => $customer->current_debt,
+                'points' => $customer->total_points,
+                'debt' => $customer->current_debt,
             ];
         }
         
@@ -554,6 +481,7 @@ class PosController extends Controller
                 'message' => 'Số điện thoại đã tồn tại trong hệ thống'
             ];
         }
+        
         // Tạo khách hàng mới
         $customer = new Customer();
         $customer->full_name = $name;
@@ -562,7 +490,8 @@ class PosController extends Controller
         $customer->address = $address;
         $customer->status = Customer::STATUS_ACTIVE;
         $customer->created_at = time();
-        $customer->beforeSave(true);  
+        $customer->beforeSave(true);
+        
         if ($customer->save()) {
             // Lưu id khách hàng vào session
             Yii::$app->session->set('pos_customer_id', $customer->id);
@@ -572,18 +501,16 @@ class PosController extends Controller
                 'message' => 'Đã thêm khách hàng mới',
                 'customer' => [
                     'id' => $customer->id,
-                    'full_name' => $customer->full_name,
+                    'name' => $customer->full_name,
                     'phone' => $customer->phone,
                     'email' => $customer->email,
                     'address' => $customer->address,
-                    'total_points' => 0,
-                    'current_debt' => 0,
                 ]
             ];
         } else {
             return [
                 'success' => false,
-                'message' => 'Không thể thêm khách hàng 2: ' . implode(', ', $customer->getErrorSummary(true))
+                'message' => 'Không thể thêm khách hàng: ' . implode(', ', $customer->getErrorSummary(true))
             ];
         }
     }
@@ -617,6 +544,21 @@ class PosController extends Controller
             $tax += $item['tax'] * $item['quantity'];
         }
         
+        // Áp dụng giảm giá tổng nếu có
+        $discountInfo = Yii::$app->session->get('pos_discount');
+        if ($discountInfo) {
+            if ($discountInfo['type'] == 'percent') {
+                $discount += $subtotal * ($discountInfo['value'] / 100);
+            } else {
+                $discount += $discountInfo['value'];
+            }
+            
+            // Giới hạn giảm giá không vượt quá tổng tiền
+            if ($discount > $subtotal) {
+                $discount = $subtotal;
+            }
+        }
+        
         $grandTotal = $subtotal - $discount + $tax;
         
         // Lấy thông tin khách hàng đã chọn nếu có
@@ -634,7 +576,6 @@ class PosController extends Controller
             'card' => 'Thẻ',
             'momo' => 'Ví MoMo',
             'vnpay' => 'VNPay',
-            'zalopay' => 'ZaloPay',
             'credit' => 'Công nợ',
         ];
         
@@ -673,37 +614,9 @@ class PosController extends Controller
             'value' => $value,
         ]);
         
-        // Lấy giỏ hàng từ session
+        // Lấy giỏ hàng từ session và tính toán lại tổng
         $cart = Yii::$app->session->get('pos_cart', []);
-        
-        // Tính toán tổng giỏ hàng
-        $subtotal = 0;
-        foreach ($cart as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
-        }
-        
-        // Tính giảm giá
-        $discountAmount = 0;
-        if ($type == 'percent') {
-            $discountAmount = $subtotal * ($value / 100);
-        } else {
-            $discountAmount = $value;
-        }
-        
-        // Giới hạn giảm giá không vượt quá tổng tiền
-        if ($discountAmount > $subtotal) {
-            $discountAmount = $subtotal;
-        }
-        
-        $grandTotal = $subtotal - $discountAmount;
-        
-        return [
-            'success' => true,
-            'message' => 'Đã áp dụng giảm giá',
-            'subtotal' => $subtotal,
-            'discount' => $discountAmount,
-            'grandTotal' => $grandTotal,
-        ];
+        return $this->calculateCartTotals($cart);
     }
     
     /**
@@ -765,17 +678,13 @@ class PosController extends Controller
         try {
             // Tạo đơn hàng mới
             $order = new Order();
+            $order->code = 'HD' . time() . rand(1000, 9999);
             $order->customer_id = $customerId;
-            $order->status = Order::STATUS_COMPLETED;
-            $order->subtotal = $subtotal;
-            $order->discount = $discountAmount;
-            $order->tax = $tax;
-            $order->total = $grandTotal;
-            $order->note = $note;
-            $order->created_by = Yii::$app->user->id;
+            $order->total_amount = $subtotal;
+            $order->discount_amount = $discountAmount;
+            $order->final_amount = $grandTotal;
             $order->created_at = time();
             $order->pos_session_id = PosSession::getActiveSession()->id;
-            
             if (!$order->save()) {
                 throw new \Exception('Không thể tạo đơn hàng: ' . implode(', ', $order->getErrorSummary(true)));
             }
@@ -785,24 +694,19 @@ class PosController extends Controller
                 $orderItem = new OrderItem();
                 $orderItem->order_id = $order->id;
                 $orderItem->product_id = $item['product_id'];
-                $orderItem->variant_id = $item['variant_id'];
-                $orderItem->name = $item['name'];
-                $orderItem->code = $item['code'];
                 $orderItem->quantity = $item['quantity'];
-                $orderItem->price = $item['price'];
-                $orderItem->original_price = $item['original_price'];
-                $orderItem->discount = $item['discount'];
-                $orderItem->tax = $item['tax'];
-                $orderItem->total = $item['price'] * $item['quantity'] - ($item['discount'] * $item['quantity']) + ($item['tax'] * $item['quantity']);
+                $orderItem->unit_price = $item['price'];
+                $orderItem->discount_amount = $item['discount'];
+                $orderItem->final_price = $item['price'] * $item['quantity'] - ($item['discount'] * $item['quantity']) + ($item['tax'] * $item['quantity']);
                 
                 if (!$orderItem->save()) {
                     throw new \Exception('Không thể thêm chi tiết đơn hàng: ' . implode(', ', $orderItem->getErrorSummary(true)));
                 }
-                
+                return $orderItem;
                 // Cập nhật tồn kho
                 $product = Product::findOne($item['product_id']);
                 if ($product) {
-                    $product->current_stock -= $item['quantity']; // Changed from stock_quantity
+                    $product->current_stock -= $item['quantity'];
                     
                     if (!$product->save()) {
                         throw new \Exception('Không thể cập nhật tồn kho: ' . implode(', ', $product->getErrorSummary(true)));
@@ -839,6 +743,48 @@ class PosController extends Controller
             if (!$payment->save()) {
                 throw new \Exception('Không thể thêm thanh toán: ' . implode(', ', $payment->getErrorSummary(true)));
             }
+
+            try {
+                // Ghi lại lịch sử giao dịch
+                $transactionHistory = new \common\models\TransactionHistory();
+                $transactionHistory->transaction_code = 'TRX' . time() . rand(1000, 9999);
+                $transactionHistory->order_id = $order->id;
+                $transactionHistory->user_id = Yii::$app->user->id;
+                $transactionHistory->pos_session_id = $order->pos_session_id;
+                $transactionHistory->customer_id = $order->customer_id;
+                $transactionHistory->total_amount = $order->subtotal;
+                $transactionHistory->discount_amount = $order->discount;
+                $transactionHistory->final_amount = $order->total;
+                
+                // Thiết lập thông tin thanh toán
+                if ($payment->payment_method == 'cash') {
+                    $transactionHistory->cash_amount = $payment->amount;
+                } elseif ($payment->payment_method == 'card') {
+                    $transactionHistory->card_amount = $payment->amount;
+                } elseif ($payment->payment_method == 'bank_transfer') {
+                    $transactionHistory->bank_transfer_amount = $payment->amount;
+                } elseif (in_array($payment->payment_method, ['momo', 'vnpay'])) {
+                    $transactionHistory->ewallet_amount = $payment->amount;
+                }
+                
+                $transactionHistory->paid_amount = $payment->amount;
+                
+                // Thiết lập trạng thái thanh toán
+                if ($payment->payment_method == 'credit') {
+                    $transactionHistory->payment_status = \common\models\TransactionHistory::STATUS_PENDING;
+                    $transactionHistory->transaction_type = \common\models\TransactionHistory::TYPE_CREDIT;
+                } else {
+                    $transactionHistory->payment_status = \common\models\TransactionHistory::STATUS_PAID;
+                    $transactionHistory->transaction_type = \common\models\TransactionHistory::TYPE_SALE;
+                }
+                
+                $transactionHistory->notes = $note;
+                $transactionHistory->save();
+                
+            } catch (\Exception $e) {
+                // Ghi log lỗi nhưng không cần rollback transaction
+                Yii::error('Không thể lưu lịch sử giao dịch: ' . $e->getMessage());
+            }
             
             // Commit transaction
             $transaction->commit();
@@ -869,6 +815,122 @@ class PosController extends Controller
                 'message' => $e->getMessage()
             ];
         }
+    }
+    
+    /**
+     * Lưu đơn hàng tạm
+     */
+    public function actionHoldOrder()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        $note = Yii::$app->request->post('note', '');
+        
+        // Lấy giỏ hàng từ session
+        $cart = Yii::$app->session->get('pos_cart', []);
+        
+        if (empty($cart)) {
+            return [
+                'success' => false,
+                'message' => 'Giỏ hàng trống, không thể lưu tạm'
+            ];
+        }
+        
+        // Lấy thông tin khách hàng
+        $customerId = Yii::$app->session->get('pos_customer_id');
+        
+        // Lưu đơn hàng tạm vào cơ sở dữ liệu
+        $order = new Order();
+        $order->customer_id = $customerId;
+        $order->status = Order::STATUS_PENDING;
+        $order->note = $note;
+        $order->created_by = Yii::$app->user->id;
+        $order->created_at = time();
+        $order->pos_session_id = PosSession::getActiveSession()->id;
+        
+        // Tính toán tổng giỏ hàng
+        $cartTotals = $this->calculateCartTotals($cart);
+        
+        $order->subtotal = $cartTotals['subtotal'];
+        $order->discount = $cartTotals['discount'];
+        $order->tax = $cartTotals['tax'];
+        $order->total = $cartTotals['grandTotal'];
+        
+        $transaction = Yii::$app->db->beginTransaction();
+        
+        try {
+            if (!$order->save()) {
+                throw new \Exception('Không thể tạo đơn hàng tạm: ' . implode(', ', $order->getErrorSummary(true)));
+            }
+            
+            // Thêm chi tiết đơn hàng
+            foreach ($cart as $itemKey => $item) {
+                $orderItem = new OrderItem();
+                $orderItem->order_id = $order->id;
+                $orderItem->product_id = $item['product_id'];
+                $orderItem->variant_id = isset($item['variant_id']) ? $item['variant_id'] : null;
+                $orderItem->name = $item['name'];
+                $orderItem->code = $item['code'];
+                $orderItem->quantity = $item['quantity'];
+                $orderItem->price = $item['price'];
+                $orderItem->original_price = $item['original_price'];
+                $orderItem->discount = $item['discount'];
+                $orderItem->tax = $item['tax'];
+                $orderItem->total = $item['price'] * $item['quantity'] - ($item['discount'] * $item['quantity']) + ($item['tax'] * $item['quantity']);
+                
+                if (!$orderItem->save()) {
+                    throw new \Exception('Không thể thêm chi tiết đơn hàng: ' . implode(', ', $orderItem->getErrorSummary(true)));
+                }
+            }
+            
+            $transaction->commit();
+            
+            // Xóa giỏ hàng khỏi session
+            Yii::$app->session->remove('pos_cart');
+            Yii::$app->session->remove('pos_customer_id');
+            Yii::$app->session->remove('pos_discount');
+            Yii::$app->session->remove('pos_order_note');
+            
+            return [
+                'success' => true,
+                'message' => 'Đã lưu đơn hàng tạm',
+                'order' => [
+                    'id' => $order->id,
+                    'code' => $this->getOrderCode($order),
+                ]
+            ];
+            
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Lấy URL thanh toán
+     */
+    public function actionGetPaymentUrl()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        // Kiểm tra giỏ hàng
+        $cart = Yii::$app->session->get('pos_cart', []);
+        
+        if (empty($cart)) {
+            return [
+                'success' => false,
+                'message' => 'Giỏ hàng trống, không thể thanh toán'
+            ];
+        }
+        
+        return [
+            'success' => true,
+            'url' => Yii::$app->urlManager->createUrl(['pos/payment'])
+        ];
     }
     
     /**
@@ -917,6 +979,9 @@ class PosController extends Controller
         }
     }
     
+    /**
+     * Đóng phiên làm việc POS
+     */
     public function actionCloseSession()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
@@ -1026,107 +1091,6 @@ class PosController extends Controller
     }
     
     /**
-     * Lưu đơn hàng tạm
-     */
-    public function actionHoldOrder()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        
-        $note = Yii::$app->request->post('note', '');
-        
-        // Lấy giỏ hàng từ session
-        $cart = Yii::$app->session->get('pos_cart', []);
-        
-        if (empty($cart)) {
-            return [
-                'success' => false,
-                'message' => 'Giỏ hàng trống, không thể lưu tạm'
-            ];
-        }
-        
-        // Lấy thông tin khách hàng
-        $customerId = Yii::$app->session->get('pos_customer_id');
-        
-        // Lưu đơn hàng tạm vào cơ sở dữ liệu
-        $order = new Order();
-        $order->customer_id = $customerId;
-        $order->status = Order::STATUS_PENDING;
-        $order->note = $note;
-        $order->created_by = Yii::$app->user->id;
-        $order->created_at = time();
-        $order->pos_session_id = PosSession::getActiveSession()->id;
-        
-        // Tính toán tổng giỏ hàng
-        $subtotal = 0;
-        $discount = 0;
-        $tax = 0;
-        
-        foreach ($cart as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
-            $discount += $item['discount'] * $item['quantity'];
-            $tax += $item['tax'] * $item['quantity'];
-        }
-        
-        $order->subtotal = $subtotal;
-        $order->discount = $discount;
-        $order->tax = $tax;
-        $order->total = $subtotal - $discount + $tax;
-        
-        $transaction = Yii::$app->db->beginTransaction();
-        
-        try {
-            if (!$order->save()) {
-                throw new \Exception('Không thể tạo đơn hàng tạm: ' . implode(', ', $order->getErrorSummary(true)));
-            }
-            
-            // Thêm chi tiết đơn hàng
-            foreach ($cart as $itemKey => $item) {
-                $orderItem = new OrderItem();
-                $orderItem->order_id = $order->id;
-                $orderItem->product_id = $item['product_id'];
-                $orderItem->variant_id = $item['variant_id'];
-                $orderItem->name = $item['name'];
-                $orderItem->code = $item['code'];
-                $orderItem->quantity = $item['quantity'];
-                $orderItem->price = $item['price'];
-                $orderItem->original_price = $item['original_price'];
-                $orderItem->discount = $item['discount'];
-                $orderItem->tax = $item['tax'];
-                $orderItem->total = $item['price'] * $item['quantity'] - ($item['discount'] * $item['quantity']) + ($item['tax'] * $item['quantity']);
-                
-                if (!$orderItem->save()) {
-                    throw new \Exception('Không thể thêm chi tiết đơn hàng: ' . implode(', ', $orderItem->getErrorSummary(true)));
-                }
-            }
-            
-            $transaction->commit();
-            
-            // Xóa giỏ hàng khỏi session
-            Yii::$app->session->remove('pos_cart');
-            Yii::$app->session->remove('pos_customer_id');
-            Yii::$app->session->remove('pos_discount');
-            Yii::$app->session->remove('pos_order_note');
-            
-            return [
-                'success' => true,
-                'message' => 'Đã lưu đơn hàng tạm',
-                'order' => [
-                    'id' => $order->id,
-                    'code' => $this->getOrderCode($order),
-                ]
-            ];
-            
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-            
-            return [
-                'success' => false,
-                'message' => $e->getMessage()
-            ];
-        }
-    }
-    
-    /**
      * Lấy danh sách đơn hàng tạm
      */
     public function actionGetHeldOrders()
@@ -1211,7 +1175,7 @@ class PosController extends Controller
                 'price' => $item->price,
                 'original_price' => $item->original_price,
                 'quantity' => $item->quantity,
-                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '', // Changed from unit
+                'unit' => $product->primaryUnit ? $product->primaryUnit->name : '',
                 'image_url' => $this->getProductImageUrl($product),
                 'discount' => $item->discount,
                 'tax' => $item->tax,
@@ -1248,8 +1212,58 @@ class PosController extends Controller
     }
     
     /**
+     * Tính toán tổng giỏ hàng
+     * 
+     * @param array $cart Giỏ hàng
+     * @return array Kết quả tính toán
+     */
+    protected function calculateCartTotals($cart)
+    {
+        $totalQuantity = 0;
+        $subtotal = 0;
+        $discount = 0;
+        $tax = 0;
+        
+        foreach ($cart as $item) {
+            $totalQuantity += $item['quantity'];
+            $itemTotal = $item['price'] * $item['quantity'];
+            $subtotal += $itemTotal;
+            $discount += $item['discount'] * $item['quantity'];
+            $tax += $item['tax'] * $item['quantity'];
+        }
+        
+        // Áp dụng giảm giá tổng nếu có
+        $discountInfo = Yii::$app->session->get('pos_discount');
+        if ($discountInfo) {
+            if ($discountInfo['type'] == 'percent') {
+                $discount += $subtotal * ($discountInfo['value'] / 100);
+            } else {
+                $discount += $discountInfo['value'];
+            }
+            
+            // Giới hạn giảm giá không vượt quá tổng tiền
+            if ($discount > $subtotal) {
+                $discount = $subtotal;
+            }
+        }
+        
+        $grandTotal = $subtotal - $discount + $tax;
+        
+        return [
+            'success' => true,
+            'message' => 'Đã cập nhật giỏ hàng',
+            'cart' => $cart,
+            'totalQuantity' => $totalQuantity,
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'tax' => $tax,
+            'grandTotal' => $grandTotal,
+        ];
+    }
+    
+    /**
      * Kiểm tra quyền truy cập POS cho người dùng hiện tại
-     *
+     * 
      * @return bool true nếu có quyền, false nếu không
      */
     protected static function checkPosAccess()
@@ -1271,10 +1285,10 @@ class PosController extends Controller
             return $user->canAccessPos();
         }
         
-        // Mặc định cho phép đăng nhập (có thể thay đổi tùy theo logic)
+        // Mặc định cho phép đăng nhập
         return true;
     }
-    
+
     /**
      * Tạo mã đơn hàng từ ID
      * 

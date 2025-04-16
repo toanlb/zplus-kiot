@@ -62,6 +62,9 @@ return [
                 'api/orders/<id:\d+>' => 'order/view',
             ],
         ],
+        'transactionHistoryListener' => [
+            'class' => 'common\components\TransactionHistoryListener',
+        ],
         'formatter' => [
             'class' => 'yii\i18n\Formatter',
             'dateFormat' => 'php:d/m/Y',
@@ -97,6 +100,13 @@ return [
                 ],
             ],
         ],
+    ],
+    'modules' => [
+        // Các modules khác...
+        'transactionhistory' => [
+            'class' => 'pos\modules\transactionhistory\Module',
+        ],
+            
     ],
     'params' => $params,
     'defaultRoute' => 'site/index',

@@ -174,24 +174,6 @@ $this->title = 'Thanh toán';
                                     </div>
                                 </div>
                                 <div class="col-6 mb-3">
-                                    <div class="payment-method-item" data-method="card">
-                                        <i class="fas fa-credit-card fa-2x mb-2"></i>
-                                        <div>Thẻ</div>
-                                    </div>
-                                </div>
-                                <div class="col-6 mb-3">
-                                    <div class="payment-method-item" data-method="momo">
-                                        <i class="fas fa-wallet fa-2x mb-2"></i>
-                                        <div>Ví MoMo</div>
-                                    </div>
-                                </div>
-                                <div class="col-6 mb-3">
-                                    <div class="payment-method-item" data-method="vnpay">
-                                        <i class="fas fa-qrcode fa-2x mb-2"></i>
-                                        <div>VNPay</div>
-                                    </div>
-                                </div>
-                                <div class="col-6 mb-3">
                                     <div class="payment-method-item" data-method="credit">
                                         <i class="fas fa-handshake fa-2x mb-2"></i>
                                         <div>Công nợ</div>
@@ -258,53 +240,6 @@ $this->title = 'Thanh toán';
                             </div>
                         </div>
                         
-                        <div id="cardPaymentForm" class="payment-form" style="display: none;">
-                            <div class="form-group">
-                                <label for="cardType">Loại thẻ:</label>
-                                <select class="form-control" id="cardType">
-                                    <option value="visa">Visa</option>
-                                    <option value="mastercard">MasterCard</option>
-                                    <option value="jcb">JCB</option>
-                                    <option value="amex">American Express</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="cardNumber">Số thẻ:</label>
-                                <input type="text" class="form-control" id="cardNumber">
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label for="cardExpiry">Hạn thẻ:</label>
-                                    <input type="text" class="form-control" id="cardExpiry" placeholder="MM/YY">
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="cardCvv">CVV:</label>
-                                    <input type="text" class="form-control" id="cardCvv">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="momoPaymentForm" class="payment-form text-center" style="display: none;">
-                            <div class="qr-code-container mb-3">
-                                <img src="<?= Url::to(['/images/momo-qr.png']) ?>" alt="MoMo QR Code" class="img-thumbnail">
-                            </div>
-                            
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle mr-2"></i> Vui lòng quét mã QR bằng ứng dụng MoMo để thanh toán.
-                            </div>
-                        </div>
-                        
-                        <div id="vnpayPaymentForm" class="payment-form text-center" style="display: none;">
-                            <div class="qr-code-container mb-3">
-                                <img src="<?= Url::to(['/images/vnpay-qr.png']) ?>" alt="VNPay QR Code" class="img-thumbnail">
-                            </div>
-                            
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle mr-2"></i> Vui lòng quét mã QR bằng ứng dụng ngân hàng để thanh toán qua VNPay.
-                            </div>
-                        </div>
                         
                         <div id="creditPaymentForm" class="payment-form" style="display: none;">
                             <?php if ($customer): ?>
@@ -514,16 +449,18 @@ $(document).ready(function() {
     
     // Complete Order
     function completeOrder() {
+        const self = this;
         $.ajax({
-            url: '<?= Url::to(['/pos/complete-order']) ?>',
+            url: 'complete-order',
             type: 'POST',
             data: {
                 paymentMethod: paymentMethod,
                 amountTendered: amountTendered,
                 note: $('#paymentNote').val(),
-                _csrf: '<?= Yii::$app->request->csrfToken ?>'
+                _csrf: self.csrfToken
             },
             success: function(response) {
+                console.log(response);
                 if (response.success) {
                     // Show success modal
                     $('#successOrderCode').text(response.order.code);

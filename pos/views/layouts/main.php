@@ -115,43 +115,13 @@ AppAsset::register($this);
                     </li>
                     <li class="nav-header">QUẢN LÝ</li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-chart-bar"></i>
-                            <p>
-                                Báo cáo bán hàng
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Doanh số theo ngày</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Doanh số theo nhân viên</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Sản phẩm bán chạy</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="<?=  Url::to(['/transactionhistory'])?>" class="nav-link">
                             <i class="nav-icon fas fa-history"></i>
                             <p>
                                 Lịch sử giao dịch
                             </p>
                         </a>
                     </li>
-                    <li class="nav-header">HỆ THỐNG</li>
                     <li class="nav-item">
                         <a href="<?= Url::to(['/pos-session/index']) ?>" class="nav-link">
                             <i class="nav-icon fas fa-users"></i>
@@ -160,6 +130,7 @@ AppAsset::register($this);
                             </p>
                         </a>
                     </li>
+                    <li class="nav-header">HỆ THỐNG</li>
                     <li class="nav-item">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-cog"></i>

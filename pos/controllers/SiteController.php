@@ -7,8 +7,6 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use pos\models\LoginForm;
 use pos\models\PosSession;
-use yii\web\ErrorAction;
-use yii\web\NotFoundHttpException;
 
 /**
  * Site controller
@@ -59,7 +57,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays homepage.
+     * Trang chủ
      *
      * @return string
      */
@@ -86,7 +84,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Login action.
+     * Đăng nhập
      *
      * @return string|\yii\web\Response
      */
@@ -125,7 +123,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Logout action.
+     * Đăng xuất
      *
      * @return \yii\web\Response
      */
@@ -160,7 +158,7 @@ class SiteController extends Controller
             return $user->canAccessPos();
         }
         
-        // Mặc định cho phép đăng nhập (có thể thay đổi tùy theo logic)
+        // Mặc định cho phép đăng nhập
         return true;
     }
     

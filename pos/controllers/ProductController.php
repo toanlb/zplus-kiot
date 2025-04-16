@@ -59,7 +59,7 @@ class ProductController extends Controller
     {
         $categoryId = Yii::$app->request->get('categoryId');
         $page = Yii::$app->request->get('page', 1);
-        $perPage = Yii::$app->request->get('perPage', Yii::$app->params['pos']['itemsPerPage']);
+        $perPage = Yii::$app->request->get('perPage', 24);
         
         $query = Product::find()
             ->where(['status' => Product::STATUS_ACTIVE]);
@@ -105,13 +105,6 @@ class ProductController extends Controller
             ];
         }
         
-        // Lấy thông tin biến thể nếu có
-        $variants = [];
-        if ($product->has_variants) {
-            // TODO: Lấy thông tin biến thể từ model phù hợp
-            // Ví dụ: $variants = $product->getVariants();
-        }
-        
         return [
             'success' => true,
             'product' => $this->formatProductData($product, true)
@@ -125,7 +118,7 @@ class ProductController extends Controller
     {
         $search = Yii::$app->request->get('q');
         $page = Yii::$app->request->get('page', 1);
-        $perPage = Yii::$app->request->get('perPage', Yii::$app->params['pos']['itemsPerPage']);
+        $perPage = Yii::$app->request->get('perPage', 24);
         
         if (!$search) {
             return [
@@ -206,11 +199,10 @@ class ProductController extends Controller
             'name' => $product->name,
             'code' => $product->code,
             'price' => (float)$product->price,
-            'discount_price' => (float)$product->discount_price,
+            'discount_price' => (float)$product->discount_price ?? $product->price,
             'unit' => $product->unit ? $product->unit->name : '',
-            'image_url' => $product->getImageUrl(),
+            'image_url' => $this->getProductImageUrl($product),
             'in_stock' => (int)$product->stock_quantity,
-            'has_variants' => (bool)$product->has_variants,
         ];
         
         if ($detailed) {
@@ -219,18 +211,29 @@ class ProductController extends Controller
                 'description' => $product->description,
                 'category' => $product->category ? $product->category->name : '',
                 'category_id' => $product->category_id,
-                'cost' => (float)$product->cost_price,
-                'tax_rate' => (float)$product->tax_rate,
-                'created_at' => $product->created_at,
-                'updated_at' => $product->updated_at,
             ]);
-            
-            // Thêm thông tin biến thể nếu có
-            if ($product->has_variants) {
-                $data['variants'] = []; // TODO: Lấy thông tin biến thể
-            }
         }
         
         return $data;
+    }
+    
+    /**
+     * Lấy đường dẫn hình ảnh sản phẩm
+     * 
+     * @param Product $product
+     * @return string
+     */
+    protected function getProductImageUrl($product)
+    {
+        // If product has getImageUrl method
+        if (method_exists($product, 'getImageUrl')) {
+            $url = $product->getImageUrl();
+            if ($url) {
+                return $url;
+            }
+        }
+        
+        // Default image if none exists
+        return Yii::$app->request->baseUrl . '/images/product-default.png';
     }
 }

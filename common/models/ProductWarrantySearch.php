@@ -54,8 +54,8 @@ class ProductWarrantySearch extends Model
         ];
         
         $dataProvider->sort->attributes['customer_name'] = [
-            'asc' => ['customers.full_name' => SORT_ASC],
-            'desc' => ['customers.full_name' => SORT_DESC],
+            'asc' => ['customer.full_name' => SORT_ASC],
+            'desc' => ['customer.full_name' => SORT_DESC],
         ];
 
         $this->load($params);

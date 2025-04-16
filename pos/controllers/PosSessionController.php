@@ -11,8 +11,14 @@ use pos\models\PosSessionSearch;
 use yii\web\NotFoundHttpException;
 use pos\assets\PosAsset;
 
+/**
+ * Controller quản lý phiên làm việc POS
+ */
 class PosSessionController extends Controller
 {
+    /**
+     * {@inheritdoc}
+     */
     public function init()
     {
         parent::init();
@@ -20,6 +26,9 @@ class PosSessionController extends Controller
         PosAsset::register($this->view);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function behaviors()
     {
         return [
@@ -46,7 +55,11 @@ class PosSessionController extends Controller
         ];
     }
 
-    // Hiển thị danh sách ca làm việc
+    /**
+     * Hiển thị danh sách ca làm việc
+     * 
+     * @return string
+     */
     public function actionIndex()
     {
         $searchModel = new PosSessionSearch();
@@ -58,7 +71,13 @@ class PosSessionController extends Controller
         ]);
     }
 
-    // Xem chi tiết ca làm việc
+    /**
+     * Xem chi tiết ca làm việc
+     * 
+     * @param int $id ID của phiên làm việc
+     * @return string
+     * @throws NotFoundHttpException nếu không tìm thấy phiên
+     */
     public function actionView($id)
     {
         $model = $this->findModel($id);
@@ -68,7 +87,11 @@ class PosSessionController extends Controller
         ]);
     }
 
-    // Tạo mới ca làm việc (từ giao diện quản lý)
+    /**
+     * Tạo mới ca làm việc (từ giao diện quản lý)
+     * 
+     * @return mixed
+     */
     public function actionCreate()
     {
         $model = new PosSession();
@@ -89,7 +112,13 @@ class PosSessionController extends Controller
         ]);
     }
 
-    // Cập nhật ca làm việc
+    /**
+     * Cập nhật ca làm việc
+     * 
+     * @param int $id ID của phiên làm việc
+     * @return mixed
+     * @throws NotFoundHttpException nếu không tìm thấy phiên
+     */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
@@ -110,7 +139,13 @@ class PosSessionController extends Controller
         ]);
     }
 
-    // Xóa ca làm việc
+    /**
+     * Xóa ca làm việc
+     * 
+     * @param int $id ID của phiên làm việc
+     * @return mixed
+     * @throws NotFoundHttpException nếu không tìm thấy phiên
+     */
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
@@ -131,7 +166,13 @@ class PosSessionController extends Controller
         return $this->redirect(['index']);
     }
 
-    // Tìm model
+    /**
+     * Tìm model phiên làm việc theo ID
+     * 
+     * @param int $id ID của phiên làm việc
+     * @return PosSession model phiên làm việc
+     * @throws NotFoundHttpException nếu không tìm thấy phiên
+     */
     protected function findModel($id)
     {
         if (($model = PosSession::findOne($id)) !== null) {

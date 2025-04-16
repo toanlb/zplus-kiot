@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var note = $('#note').val();
         
         $.ajax({
-            url: '<?= Url::to(['/pos/close-session']) ?>',
+            url: 'pos/close-session',
             type: 'POST',
             data: {
                 cashAmount: cashAmount,
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hàm tải thông tin ca làm việc
     function loadSessionInfo() {
         $.ajax({
-            url: '<?= Url::to(['/pos/get-session-info']) ?>',
+            url: 'pos/get-session-info',
             type: 'GET',
             success: function(response) {
                 if (response.success) {
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hàm tải danh sách đơn hàng tạm
     function loadHeldOrders() {
         $.ajax({
-            url: '<?= Url::to(['/pos/get-held-orders']) ?>',
+            url: 'pos/get-held-orders',
             type: 'GET',
             success: function(response) {
                 if (response.success) {
@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hàm tiếp tục đơn hàng tạm
     function resumeOrder(orderId) {
         $.ajax({
-            url: '<?= Url::to(['/pos/resume-order']) ?>',
+            url: 'pos/resume-order',
             type: 'GET',
             data: {
                 id: orderId
