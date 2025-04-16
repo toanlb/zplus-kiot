@@ -42,7 +42,9 @@ phpunit.phar
 /backend/web/index-test.php
 /backend/web/robots.txt
 pos/runtime/logs/app.log
+pos/runtime/logs/app.log
 pos/web/assets/447eef14/bower.json
+pos/web/assets/447eef14/CHANGELOG.md
 pos/web/assets/447eef14/CONTRIBUTING.md
 pos/web/assets/447eef14/Gemfile
 pos/web/assets/447eef14/Gemfile.lock

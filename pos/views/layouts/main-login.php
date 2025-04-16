@@ -115,7 +115,7 @@ AppAsset::register($this);
     <?= $content ?>
     
     <div class="login-box-footer">
-        &copy; <?= date('Y') ?> <strong>POS Bán Hàng</strong><br>
+        &copy; <?= date('Y') ?> <strong>Zplus - POS Bán Hàng</strong><br>
         <small>Phiên bản 1.0.0</small>
     </div>
 </div>

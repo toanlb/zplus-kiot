@@ -16,7 +16,7 @@ class PosSessionController extends Controller
     public function init()
     {
         parent::init();
-        $this->layout = 'pos';
+        $this->layout = 'main';
         PosAsset::register($this->view);
     }
 

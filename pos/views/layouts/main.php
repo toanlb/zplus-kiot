@@ -153,7 +153,7 @@ AppAsset::register($this);
                     </li>
                     <li class="nav-header">HỆ THỐNG</li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="<?= Url::to(['/pos-session/index']) ?>" class="nav-link">
                             <i class="nav-icon fas fa-users"></i>
                             <p>
                                 Quản lý ca làm việc

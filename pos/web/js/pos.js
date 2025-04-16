@@ -144,7 +144,7 @@ function loadProducts() {
     $('#productGrid').html('<div class="col-12 text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Đang tải sản phẩm...</p></div>');
     
     $.ajax({
-        url: POS.urls.getProducts,
+        url: 'pos/get-products',
         type: 'GET',
         data: {
             categoryId: currentCategoryId,
@@ -152,6 +152,7 @@ function loadProducts() {
             page: currentPage
         },
         success: function(response) {
+            console.log(currentCategoryId, currentSearch, currentPage);
             if (response.success) {
                 renderProducts(response.products, response.totalCount, response.currentPage, response.pages);
             } else {
@@ -354,7 +355,7 @@ function renderPagination(currentPage, totalPages) {
  */
 function addToCart(productId, quantity) {
     $.ajax({
-        url: POS.urls.addToCart,
+        url: 'pos/add-to-cart',
         type: 'POST',
         data: {
             productId: productId,
@@ -380,7 +381,7 @@ function addToCart(productId, quantity) {
  */
 function updateCartItemQuantity(itemKey, quantity, isAbsolute = false) {
     $.ajax({
-        url: POS.urls.updateCart,
+        url: 'pos/update-cart-item',
         type: 'POST',
         data: {
             itemKey: itemKey,
@@ -405,7 +406,7 @@ function updateCartItemQuantity(itemKey, quantity, isAbsolute = false) {
  */
 function removeFromCart(itemKey) {
     $.ajax({
-        url: POS.urls.removeFromCart,
+        url: 'pos/remove-from-cart',
         type: 'POST',
         data: {
             itemKey: itemKey,
@@ -432,7 +433,7 @@ function clearCart() {
     if (Object.keys(cart).length === 0) return;
     
     $.ajax({
-        url: POS.urls.clearCart,
+        url: 'pos/clear-cart',
         type: 'POST',
         data: {
             _csrf: POS.csrfToken
@@ -462,7 +463,7 @@ function clearCart() {
  */
 function loadCart() {
     $.ajax({
-        url: POS.urls.getCart,
+        url: 'pos/get-cart',
         type: 'GET',
         success: function(response) {
             if (response.success) {
@@ -573,7 +574,7 @@ function showProductDetails(productId) {
     $('#productDetailsContent').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Đang tải thông tin sản phẩm...</p></div>');
     
     $.ajax({
-        url: POS.urls.getProductDetails,
+        url: 'pos/get-product-details',
         type: 'GET',
         data: {
             id: productId
@@ -666,7 +667,7 @@ function renderProductDetails(product) {
  */
 function holdOrder(note) {
     $.ajax({
-        url: POS.urls.holdOrder,
+        url: 'pos/hold-order',
         type: 'POST',
         data: {
             note: note,
@@ -735,7 +736,7 @@ function holdOrder(note) {
  */
 function applyDiscount(type, value) {
     $.ajax({
-        url: POS.urls.applyDiscount,
+        url: 'pos/apply-discount',
         type: 'POST',
         data: {
             type: type,
