@@ -282,8 +282,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Hàm tải thông tin ca làm việc
     function loadSessionInfo() {
+        var url = $('#get-session-info').data('url');
         $.ajax({
-            url: 'pos/get-session-info',
+            url: url,
             type: 'GET',
             success: function(response) {
                 if (response.success) {

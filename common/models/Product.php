@@ -33,11 +33,11 @@ use Yii;
  * @property int $created_at
  * @property int $updated_at
  *
- * @property ProductCategories $category
- * @property OrderItems[] $orderItems
- * @property ProductUnits $primaryUnit
- * @property ProductImages[] $productImages
- * @property ProductWarranties[] $productWarranties
+ * @property ProductCategory $category
+ * @property OrderItem[] $orderItems
+ * @property ProductUnit $primaryUnit
+ * @property ProductImage[] $productImages
+ * @property ProductWarranty[] $productWarranties
  */
 class Product extends \yii\db\ActiveRecord
 {
@@ -71,8 +71,8 @@ class Product extends \yii\db\ActiveRecord
             [['barcode', 'location'], 'string', 'max' => 100],
             [['name', 'brand'], 'string', 'max' => 255],
             [['code'], 'unique'],
-            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => ProductCategories::class, 'targetAttribute' => ['category_id' => 'id']],
-            [['primary_unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => ProductUnits::class, 'targetAttribute' => ['primary_unit_id' => 'id']],
+            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => ProductCategory::class, 'targetAttribute' => ['category_id' => 'id']],
+            [['primary_unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => ProductUnit::class, 'targetAttribute' => ['primary_unit_id' => 'id']],
         ];
     }
 
@@ -139,7 +139,7 @@ class Product extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getOrderItems()
+    public function getOrderItem()
     {
         return $this->hasMany(OrderItem::class, ['product_id' => 'id']);
     }
@@ -159,7 +159,7 @@ class Product extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getProductImages()
+    public function getProductImage()
     {
         return $this->hasMany(ProductImage::class, ['product_id' => 'id']);
     }
@@ -169,7 +169,7 @@ class Product extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getProductWarranties()
+    public function getProductWarranty()
     {
         return $this->hasMany(ProductWarranty::class, ['product_id' => 'id']);
     }

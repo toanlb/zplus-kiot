@@ -16,8 +16,8 @@ use Yii;
  * @property int $created_at
  *
  * @property ProductCategory $parent
- * @property ProductCategory[] $productCategories
- * @property Products[] $products
+ * @property ProductCategory[] $productCategory
+ * @property Product[] $products
  */
 class ProductCategory extends \yii\db\ActiveRecord
 {
@@ -81,7 +81,7 @@ class ProductCategory extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getProductCategories()
+    public function getProductCategory()
     {
         return $this->hasMany(ProductCategory::class, ['parent_id' => 'id']);
     }
@@ -91,7 +91,7 @@ class ProductCategory extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getProducts()
+    public function getProduct()
     {
         return $this->hasMany(Product::class, ['category_id' => 'id']);
     }

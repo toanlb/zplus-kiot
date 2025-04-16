@@ -18,10 +18,14 @@ use Yii;
  * @property float|null $voucher_amount
  * @property float|null $additional_fee
  *
- * @property Orders $order
+ * @property Order $order
  */
 class OrderPayment extends \yii\db\ActiveRecord
 {
+    const PAYMENT_METHOD_CASH = 1;
+    const PAYMENT_METHOD_CARD = 2;
+    const PAYMENT_METHOD_EWALLET = 3;
+    const PAYMENT_METHOD_BANK_TRANSFER = 4;
 
 
     /**
@@ -45,7 +49,7 @@ class OrderPayment extends \yii\db\ActiveRecord
             [['order_id', 'points_used'], 'integer'],
             [['cash_amount', 'card_amount', 'ewallet_amount', 'bank_transfer_amount', 'voucher_amount', 'additional_fee'], 'number'],
             [['voucher_code'], 'string', 'max' => 50],
-            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Orders::class, 'targetAttribute' => ['order_id' => 'id']],
+            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
         ];
     }
 
@@ -75,7 +79,7 @@ class OrderPayment extends \yii\db\ActiveRecord
      */
     public function getOrder()
     {
-        return $this->hasOne(Orders::class, ['id' => 'order_id']);
+        return $this->hasOne(Order::class, ['id' => 'order_id']);
     }
 
 }

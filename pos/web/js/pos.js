@@ -238,8 +238,9 @@ window.POS = {
             }
             
             // Use AJAX to navigate to payment page
+            var url = $('#get-payment-url').data('url');
             $.ajax({
-                url: 'pos/get-payment-url',
+                url: url,
                 type: 'GET',
                 success: function(response) {
                     if (response.success && response.url) {

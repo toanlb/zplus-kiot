@@ -24,9 +24,9 @@ use Yii;
  * @property string|null $maintenance_note
  * @property string|null $product_note
  *
- * @property Orders $order
- * @property Products $product
- * @property ProductWarranties[] $productWarranties
+ * @property Order $order
+ * @property Product $product
+ * @property ProductWarranty[] $productWarranties
  */
 class OrderItem extends \yii\db\ActiveRecord
 {
@@ -55,8 +55,8 @@ class OrderItem extends \yii\db\ActiveRecord
             [['product_code', 'unit'], 'string', 'max' => 50],
             [['barcode'], 'string', 'max' => 100],
             [['product_name', 'brand'], 'string', 'max' => 255],
-            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Orders::class, 'targetAttribute' => ['order_id' => 'id']],
-            [['product_id'], 'exist', 'skipOnError' => true, 'targetClass' => Products::class, 'targetAttribute' => ['product_id' => 'id']],
+            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
+            [['product_id'], 'exist', 'skipOnError' => true, 'targetClass' => Product::class, 'targetAttribute' => ['product_id' => 'id']],
         ];
     }
 
@@ -92,7 +92,7 @@ class OrderItem extends \yii\db\ActiveRecord
      */
     public function getOrder()
     {
-        return $this->hasOne(Orders::class, ['id' => 'order_id']);
+        return $this->hasOne(Order::class, ['id' => 'order_id']);
     }
 
     /**
@@ -102,7 +102,7 @@ class OrderItem extends \yii\db\ActiveRecord
      */
     public function getProduct()
     {
-        return $this->hasOne(Products::class, ['id' => 'product_id']);
+        return $this->hasOne(Product::class, ['id' => 'product_id']);
     }
 
     /**
@@ -110,9 +110,9 @@ class OrderItem extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getProductWarranties()
+    public function getProductWarranty()
     {
-        return $this->hasMany(ProductWarranties::class, ['order_item_id' => 'id']);
+        return $this->hasMany(ProductWarranty::class, ['order_item_id' => 'id']);
     }
 
 }

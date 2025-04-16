@@ -261,7 +261,7 @@ $csrfToken = Yii::$app->request->csrfToken;
                                 </button>
                             </div>
                         </div>
-                        
+                        <div id="get-payment-url" data-url="<?= Url::to(['pos/get-payment-url']) ?>"></div>
                         <button type="button" class="btn btn-success btn-lg btn-block mt-2" id="btnPayment" disabled>
                             <i class="fas fa-money-bill-wave mr-1"></i> Thanh toán (<span id="cartTotalItems">0</span>)
                         </button>

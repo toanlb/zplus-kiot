@@ -56,7 +56,7 @@ class PosController extends Controller
                     'apply-discount' => ['post'],
                     'hold-order' => ['post'],
                     'open-session' => ['post'],
-                    'complete-order' => ['post'],
+                    'complete-order' => ['get'],
                     'close-session' => ['post'],
                     'resume-order' => ['post'],
                 ],
@@ -626,9 +626,9 @@ class PosController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         
-        $paymentMethod = Yii::$app->request->post('paymentMethod');
-        $amountTendered = Yii::$app->request->post('amountTendered');
-        $note = Yii::$app->request->post('note');
+        $paymentMethod = Yii::$app->request->get('paymentMethod');
+        $amountTendered = Yii::$app->request->get('amountTendered');
+        $note = Yii::$app->request->get('note');
         
         // Lấy giỏ hàng từ session
         $cart = Yii::$app->session->get('pos_cart', []);
@@ -698,47 +698,46 @@ class PosController extends Controller
                 $orderItem->unit_price = $item['price'];
                 $orderItem->discount_amount = $item['discount'];
                 $orderItem->final_price = $item['price'] * $item['quantity'] - ($item['discount'] * $item['quantity']) + ($item['tax'] * $item['quantity']);
+
+                 // Cập nhật tồn kho
+                 $product = Product::findOne($item['product_id']);
+                 $orderItem->product_code = $product->code;
+                 $orderItem->product_name = $product->name;
+                 if ($product) {
+                     $product->current_stock -= $item['quantity'];
+                     
+                     if (!$product->save()) {
+                         throw new \Exception('Không thể cập nhật tồn kho: ' . implode(', ', $product->getErrorSummary(true)));
+                     }
+                 }
                 
                 if (!$orderItem->save()) {
                     throw new \Exception('Không thể thêm chi tiết đơn hàng: ' . implode(', ', $orderItem->getErrorSummary(true)));
                 }
-                return $orderItem;
-                // Cập nhật tồn kho
-                $product = Product::findOne($item['product_id']);
-                if ($product) {
-                    $product->current_stock -= $item['quantity'];
-                    
-                    if (!$product->save()) {
-                        throw new \Exception('Không thể cập nhật tồn kho: ' . implode(', ', $product->getErrorSummary(true)));
-                    }
-                }
+
+               
             }
-            
+    
             // Thêm thanh toán
             $payment = new OrderPayment();
             $payment->order_id = $order->id;
-            $payment->payment_method = $paymentMethod;
-            $payment->amount = $grandTotal;
-            $payment->status = OrderPayment::STATUS_COMPLETED;
-            $payment->transaction_id = time() . rand(1000, 9999);
-            $payment->created_by = Yii::$app->user->id;
-            $payment->created_at = time();
-            
-            // Nếu là công nợ thì đánh dấu chưa thanh toán
-            if ($paymentMethod == 'credit') {
-                $payment->status = OrderPayment::STATUS_PENDING;
-                
-                // Cập nhật công nợ cho khách hàng
-                if ($customerId) {
-                    $customer = Customer::findOne($customerId);
-                    if ($customer) {
-                        $customer->debt += $grandTotal;
-                        if (!$customer->save()) {
-                            throw new \Exception('Không thể cập nhật công nợ khách hàng: ' . implode(', ', $customer->getErrorSummary(true)));
-                        }
-                    }
-                }
+            switch ($paymentMethod) {
+                case 'cash':
+                    $payment->cash_amount = $grandTotal;
+                    break;
+                case 'bank_transfer':
+                    $payment->bank_transfer_amount = $grandTotal;
+                    break;
+                case 'card':
+                    $payment->ewallet_amount= $grandTotal;
+                    break;
+                case 'momo':
+                    $payment->card_amount = $grandTotal;
+                    break;
+                default:
+                    throw new \Exception('Phương thức thanh toán không hợp lệ');
             }
+        
             
             if (!$payment->save()) {
                 throw new \Exception('Không thể thêm thanh toán: ' . implode(', ', $payment->getErrorSummary(true)));
@@ -752,9 +751,9 @@ class PosController extends Controller
                 $transactionHistory->user_id = Yii::$app->user->id;
                 $transactionHistory->pos_session_id = $order->pos_session_id;
                 $transactionHistory->customer_id = $order->customer_id;
-                $transactionHistory->total_amount = $order->subtotal;
+                $transactionHistory->total_amount = $order->total_amount;
                 $transactionHistory->discount_amount = $order->discount;
-                $transactionHistory->final_amount = $order->total;
+                $transactionHistory->final_amount = $order->final_amount;
                 
                 // Thiết lập thông tin thanh toán
                 if ($payment->payment_method == 'cash') {
@@ -801,8 +800,8 @@ class PosController extends Controller
                 'order' => [
                     'id' => $order->id,
                     'code' => $this->getOrderCode($order),
-                    'total' => $order->total,
-                    'change' => ($paymentMethod == 'cash' && $amountTendered > 0) ? ($amountTendered - $order->total) : 0,
+                    'total' => $order->total_amount,
+                    'change' => ($paymentMethod == 'cash' && $amountTendered > 0) ? ($amountTendered - $order->total_amount) : 0,
                 ]
             ];
             

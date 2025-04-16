@@ -15,7 +15,7 @@ use yii\helpers\Url;
 
 $this->title = 'Thanh toán';
 ?>
-
+<div id="get-session-info" data-url="<?= Url::to(['pos/get-session-info']) ?>"></div>
 <div class="pos-payment-container">
     <div class="row no-gutters">
         <!-- Cột trái: Thông tin đơn hàng -->
@@ -452,7 +452,7 @@ $(document).ready(function() {
         const self = this;
         $.ajax({
             url: 'complete-order',
-            type: 'POST',
+            type: 'GET',
             data: {
                 paymentMethod: paymentMethod,
                 amountTendered: amountTendered,
