@@ -226,7 +226,7 @@ $csrfToken = Yii::$app->request->csrfToken;
                             </table>
                         </div>
                     </div>
-                    
+                    <div id="get-session-info" data-url="<?= Url::to(['pos/get-session-info']) ?>"></div>
                     <div class="cart-totals bg-light">
                         <table class="table table-sm mb-0">
                             <tr>

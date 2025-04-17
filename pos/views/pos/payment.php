@@ -35,7 +35,7 @@ $this->title = 'Thanh toán';
                                     <table class="table table-sm table-borderless">
                                         <tr>
                                             <th>Tên khách hàng:</th>
-                                            <td><?= Html::encode($customer->name) ?></td>
+                                            <td><?= Html::encode($customer->full_name) ?></td>
                                         </tr>
                                         <tr>
                                             <th>Số điện thoại:</th>
@@ -244,7 +244,7 @@ $this->title = 'Thanh toán';
                         <div id="creditPaymentForm" class="payment-form" style="display: none;">
                             <?php if ($customer): ?>
                                 <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle mr-2"></i> Đơn hàng sẽ được ghi vào công nợ của khách hàng <strong><?= Html::encode($customer->name) ?></strong>.
+                                    <i class="fas fa-exclamation-triangle mr-2"></i> Đơn hàng sẽ được ghi vào công nợ của khách hàng <strong><?= Html::encode($customer->full_name) ?></strong>.
                                 </div>
                                 
                                 <div class="card bg-light mb-3">
@@ -452,7 +452,7 @@ $(document).ready(function() {
         const self = this;
         $.ajax({
             url: 'complete-order',
-            type: 'GET',
+            type: 'POST',
             data: {
                 paymentMethod: paymentMethod,
                 amountTendered: amountTendered,

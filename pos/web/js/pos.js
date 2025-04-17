@@ -228,6 +228,19 @@ window.POS = {
             self.orderNote = $('#orderNote').val();
             $('#modalNote').modal('hide');
             toastr.success('Đã lưu ghi chú đơn hàng');
+            
+            // Save note to server session
+            $.ajax({
+                url: 'pos/save-order-note',
+                type: 'POST',
+                data: {
+                    note: self.orderNote,
+                    _csrf: self.csrfToken
+                },
+                error: function() {
+                    console.error('Không thể lưu ghi chú vào phiên làm việc');
+                }
+            });
         });
         
         // Payment
@@ -242,6 +255,9 @@ window.POS = {
             $.ajax({
                 url: url,
                 type: 'GET',
+                data: {
+                    customerId: self.selectedCustomerId // Add customer ID to the request
+                },
                 success: function(response) {
                     if (response.success && response.url) {
                         window.location.href = response.url;
@@ -808,6 +824,16 @@ window.POS = {
                         self.selectedCustomerId = response.customer.id;
                         self.selectedCustomerName = response.customer.name;
                         $('#selectedCustomerName').text(self.selectedCustomerName);
+                    } else {
+                        // Reset to default customer if none in session
+                        self.selectedCustomerId = null;
+                        self.selectedCustomerName = 'Khách lẻ';
+                        $('#selectedCustomerName').text(self.selectedCustomerName);
+                    }
+                    
+                    // Update order note if available
+                    if (response.orderNote) {
+                        self.orderNote = response.orderNote;
                     }
                 } else {
                     toastr.error(response.message);
@@ -1018,13 +1044,31 @@ window.POS = {
     selectCustomer: function(customerId, customerName) {
         const self = this;
         
-        self.selectedCustomerId = customerId;
-        self.selectedCustomerName = customerName;
-        
-        $('#selectedCustomerName').text(customerName);
-        $('#modalCustomerSearch').modal('hide');
-        
-        toastr.success('Đã chọn khách hàng: ' + customerName);
+        // Send customer selection to server
+        $.ajax({
+            url: 'pos/select-customer',
+            type: 'POST',
+            data: {
+                customerId: customerId,
+                _csrf: self.csrfToken
+            },
+            success: function(response) {
+                if (response.success) {
+                    self.selectedCustomerId = customerId;
+                    self.selectedCustomerName = customerName;
+                    
+                    $('#selectedCustomerName').text(customerName);
+                    $('#modalCustomerSearch').modal('hide');
+                    
+                    toastr.success('Đã chọn khách hàng: ' + customerName);
+                } else {
+                    toastr.error(response.message || 'Không thể chọn khách hàng');
+                }
+            },
+            error: function() {
+                toastr.error('Có lỗi xảy ra khi chọn khách hàng.');
+            }
+        });
     },
     
     /**
@@ -1105,6 +1149,7 @@ window.POS = {
             type: 'POST',
             data: {
                 note: note,
+                customerId: self.selectedCustomerId, // Include customer ID
                 _csrf: self.csrfToken
             },
             success: function(response) {

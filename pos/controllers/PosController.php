@@ -14,6 +14,7 @@ use common\models\Order;
 use common\models\OrderItem;
 use common\models\OrderPayment;
 use common\models\TransactionHistory;
+use yii\helpers\Url;
 
 /**
  * POS controller
@@ -36,7 +37,7 @@ class PosController extends Controller
                                      'add-customer', 'apply-discount', 'hold-order',
                                      'get-payment-url', 'open-session', 'get-session-info',
                                      'payment', 'complete-order', 'close-session', 
-                                     'get-categories', 'get-held-orders', 'resume-order'],
+                                     'get-categories', 'get-held-orders', 'resume-order','select-customer',],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
@@ -56,9 +57,10 @@ class PosController extends Controller
                     'apply-discount' => ['post'],
                     'hold-order' => ['post'],
                     'open-session' => ['post'],
-                    'complete-order' => ['get'],
+                    'complete-order' => ['post'],
                     'close-session' => ['post'],
                     'resume-order' => ['post'],
+                    'select-customer' => ['post'],
                 ],
             ],
         ];
@@ -173,7 +175,68 @@ class PosController extends Controller
             'currentPage' => $page,
         ];
     }
+
+        /**
+     * Lưu khách hàng đã chọn vào session
+     * @return \yii\web\Response
+     */
+    public function actionSelectCustomer()
+    {
+        
+        $customerId = Yii::$app->request->post('customerId');
+        
+        if ($customerId) {
+            // Tìm thông tin khách hàng từ database
+            $customer = Customer::findOne($customerId);
+            
+            if ($customer) {
+                Yii::$app->session->set('pos_customer_id', $customer->id);
+                // Lưu thông tin khách hàng vào session
+
+                return $this->asJson([
+                    'success' => true,
+                    'message' => 'Đã chọn khách hàng thành công'
+                ]);
+            }
+        }
+        
+        return $this->asJson([
+            'success' => false,
+            'message' => 'Không thể chọn khách hàng'
+        ]);
+    }
+
+    public function actionGetPaymentUrl()
+    {
+        // Lấy customer ID từ request hoặc từ session
+        $customerId = Yii::$app->request->get('customerId');
+        
+        if (!$customerId) {
+            $customer = Yii::$app->session->get('pos_selected_customer');
+            $customerId = $customer ? $customer['id'] : null;
+        }
+        
+        // Tạo URL thanh toán kèm theo thông tin khách hàng
+        $url = Url::to(['pos/payment', 'customerId' => $customerId]);
+        
+        return $this->asJson([
+            'success' => true,
+            'url' => $url
+        ]);
+    }
+
+    public function actionSaveOrderNote()
+    {
+        $note = Yii::$app->request->post('note');
+        Yii::$app->session->set('pos_order_note', $note);
+        
+        return $this->asJson([
+            'success' => true,
+            'message' => 'Đã lưu ghi chú'
+        ]);
+    }
     
+        
     /**
      * Lấy thông tin chi tiết sản phẩm
      */
@@ -365,39 +428,6 @@ class PosController extends Controller
         return $this->calculateCartTotals($cart);
     }
     
-    /**
-     * Lấy thông tin giỏ hàng
-     */
-    public function actionGetCart()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        
-        // Lấy giỏ hàng từ session
-        $cart = Yii::$app->session->get('pos_cart', []);
-        
-        $response = $this->calculateCartTotals($cart);
-        
-        // Lấy thông tin khách hàng đã chọn nếu có
-        $customerId = Yii::$app->session->get('pos_customer_id');
-        $customerInfo = null;
-        
-        if ($customerId) {
-            $customer = Customer::findOne($customerId);
-            if ($customer) {
-                $customerInfo = [
-                    'id' => $customer->id,
-                    'name' => $customer->name,
-                    'phone' => $customer->phone,
-                    'email' => $customer->email,
-                    'points' => $customer->points,
-                    'debt' => $customer->debt,
-                ];
-                $response['customer'] = $customerInfo;
-            }
-        }
-        
-        return $response;
-    }
     
     /**
      * Xóa toàn bộ giỏ hàng
@@ -568,7 +598,6 @@ class PosController extends Controller
         if ($customerId) {
             $customer = Customer::findOne($customerId);
         }
-        
         // Lấy phương thức thanh toán
         $paymentMethods = [
             'cash' => 'Tiền mặt',
@@ -589,6 +618,39 @@ class PosController extends Controller
             'customer' => $customer,
             'paymentMethods' => $paymentMethods,
         ]);
+    }
+
+     /**
+     * Lấy thông tin giỏ hàng
+     */
+    public function actionGetCart()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        // Lấy giỏ hàng từ session
+        $cart = Yii::$app->session->get('pos_cart', []);
+        
+        $response = $this->calculateCartTotals($cart);
+        
+        // Lấy thông tin khách hàng đã chọn nếu có
+        $customerId = Yii::$app->session->get('pos_customer_id');
+        $customerInfo = null;
+        
+        if ($customerId) {
+            $customer = Customer::findOne($customerId);
+            if ($customer) {
+                $customerInfo = [
+                    'id' => $customer->id,
+                    'name' => $customer->full_name,
+                    'phone' => $customer->phone,
+                    'email' => $customer->email,
+                    'points' => $customer->total_points,
+                ];
+                $response['customer'] = $customerInfo;
+            }
+        }
+        
+        return $response;
     }
     
     /**
@@ -908,29 +970,7 @@ class PosController extends Controller
             ];
         }
     }
-    
-    /**
-     * Lấy URL thanh toán
-     */
-    public function actionGetPaymentUrl()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        
-        // Kiểm tra giỏ hàng
-        $cart = Yii::$app->session->get('pos_cart', []);
-        
-        if (empty($cart)) {
-            return [
-                'success' => false,
-                'message' => 'Giỏ hàng trống, không thể thanh toán'
-            ];
-        }
-        
-        return [
-            'success' => true,
-            'url' => Yii::$app->urlManager->createUrl(['pos/payment'])
-        ];
-    }
+
     
     /**
      * Mở phiên làm việc POS
