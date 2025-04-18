@@ -95,21 +95,11 @@ $csrfToken = Yii::$app->request->csrfToken;
             <!-- Cột trái: Danh mục -->
             <div class="col-md-2 pos-categories-column">
                 <div class="pos-categories">
-                    <div class="category-search mb-2">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="searchCategory" placeholder="Tìm danh mục">
-                            <div class="input-group-append">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            </div>
-                        </div>
+                    <div class="pos-categories-header bg-primary text-white p-2">
+                        <h5 class="m-0"><i class="fas fa-th-list mr-2"></i> Danh mục</h5>
                     </div>
-                    
                     <div class="category-list">
-                        <div class="list-group" id="categoryList">
-                            <a href="#" class="list-group-item list-group-item-action active" data-id="0">
-                                <i class="fas fa-th-large mr-2"></i> Tất cả sản phẩm
-                            </a>
-                            
+                        <div class="list-group" id="categoryList">                
                             <?php foreach ($categories as $category): ?>
                             <a href="#" class="list-group-item list-group-item-action" data-id="<?= $category->id ?>">
                                 <i class="<?= $category->icon ?? 'fas fa-folder' ?> mr-2"></i> <?= Html::encode($category->name) ?>
