@@ -17,10 +17,10 @@ use Yii;
  * @property float|null $paid_amount
  * @property int $created_at
  *
- * @property Customers $customer
- * @property OrderDetails[] $orderDetails
- * @property OrderItems[] $orderItems
- * @property OrderPayments[] $orderPayments
+ * @property Customer $customer
+ * @property OrderDetail[] $orderDetails
+ * @property OrderItem[] $orderItems
+ * @property OrderPayment[] $orderPayments
  */
 class Order extends \yii\db\ActiveRecord
 {
@@ -47,7 +47,7 @@ class Order extends \yii\db\ActiveRecord
             [['total_amount', 'discount_amount', 'final_amount', 'paid_amount'], 'number'],
             [['code', 'return_code'], 'string', 'max' => 50],
             [['code'], 'unique'],
-            [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customers::class, 'targetAttribute' => ['customer_id' => 'id']],
+            [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::class, 'targetAttribute' => ['customer_id' => 'id']],
         ];
     }
 

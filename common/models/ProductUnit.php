@@ -16,7 +16,7 @@ use Yii;
  *
  * @property ProductUnit $baseUnit
  * @property ProductUnit[] $productUnits
- * @property Products[] $products
+ * @property Product[] $products
  */
 class ProductUnit extends \yii\db\ActiveRecord
 {
@@ -79,7 +79,7 @@ class ProductUnit extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getProductUnits()
+    public function getProductUnit()
     {
         return $this->hasMany(ProductUnit::class, ['base_unit_id' => 'id']);
     }
@@ -89,7 +89,7 @@ class ProductUnit extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getProducts()
+    public function getProduct()
     {
         return $this->hasMany(Product::class, ['primary_unit_id' => 'id']);
     }

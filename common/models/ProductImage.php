@@ -13,7 +13,7 @@ use Yii;
  * @property int|null $is_primary
  * @property int $created_at
  *
- * @property Products $product
+ * @property Product $product
  */
 class ProductImage extends \yii\db\ActiveRecord
 {
@@ -37,7 +37,7 @@ class ProductImage extends \yii\db\ActiveRecord
             [['product_id', 'image_url', 'created_at'], 'required'],
             [['product_id', 'is_primary', 'created_at'], 'integer'],
             [['image_url'], 'string', 'max' => 500],
-            [['product_id'], 'exist', 'skipOnError' => true, 'targetClass' => Products::class, 'targetAttribute' => ['product_id' => 'id']],
+            [['product_id'], 'exist', 'skipOnError' => true, 'targetClass' => Product::class, 'targetAttribute' => ['product_id' => 'id']],
         ];
     }
 
@@ -62,7 +62,7 @@ class ProductImage extends \yii\db\ActiveRecord
      */
     public function getProduct()
     {
-        return $this->hasOne(Products::class, ['id' => 'product_id']);
+        return $this->hasOne(Product::class, ['id' => 'product_id']);
     }
 
 }

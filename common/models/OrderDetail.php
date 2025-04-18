@@ -36,7 +36,7 @@ use Yii;
  * @property string|null $status
  * @property string|null $delivery_status
  *
- * @property Orders $order
+ * @property Order $order
  */
 class OrderDetail extends \yii\db\ActiveRecord
 {
@@ -66,7 +66,7 @@ class OrderDetail extends \yii\db\ActiveRecord
             [['delivery_order_code', 'reconciliation_code', 'status', 'delivery_status'], 'string', 'max' => 50],
             [['receiver_name'], 'string', 'max' => 255],
             [['receiver_phone'], 'string', 'max' => 20],
-            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Orders::class, 'targetAttribute' => ['order_id' => 'id']],
+            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
         ];
     }
 
@@ -114,7 +114,7 @@ class OrderDetail extends \yii\db\ActiveRecord
      */
     public function getOrder()
     {
-        return $this->hasOne(Orders::class, ['id' => 'order_id']);
+        return $this->hasOne(Order::class, ['id' => 'order_id']);
     }
 
 }

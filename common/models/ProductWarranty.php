@@ -28,10 +28,10 @@ use Yii;
  * @property int $created_at
  * @property int $updated_at
  *
- * @property Customers $customer
- * @property OrderItems $orderItem
- * @property Products $product
- * @property WarrantyRepairLogs[] $warrantyRepairLogs
+ * @property Customer $customer
+ * @property OrderItem $orderItem
+ * @property Product $product
+ * @property WarrantyRepairLog[] $warrantyRepairLogs
  */
 class ProductWarranty extends \yii\db\ActiveRecord
 {
@@ -64,9 +64,9 @@ class ProductWarranty extends \yii\db\ActiveRecord
             [['serial_number'], 'string', 'max' => 100],
             [['warranty_type', 'status'], 'string', 'max' => 20],
             [['serial_number'], 'unique'],
-            [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customers::class, 'targetAttribute' => ['customer_id' => 'id']],
-            [['order_item_id'], 'exist', 'skipOnError' => true, 'targetClass' => OrderItems::class, 'targetAttribute' => ['order_item_id' => 'id']],
-            [['product_id'], 'exist', 'skipOnError' => true, 'targetClass' => Products::class, 'targetAttribute' => ['product_id' => 'id']],
+            [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::class, 'targetAttribute' => ['customer_id' => 'id']],
+            [['order_item_id'], 'exist', 'skipOnError' => true, 'targetClass' => OrderItem::class, 'targetAttribute' => ['order_item_id' => 'id']],
+            [['product_id'], 'exist', 'skipOnError' => true, 'targetClass' => Product::class, 'targetAttribute' => ['product_id' => 'id']],
         ];
     }
 

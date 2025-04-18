@@ -35,8 +35,8 @@ use Yii;
  * @property int|null $status
  * @property string|null $note
  *
- * @property Orders[] $orders
- * @property ProductWarranties[] $productWarranties
+ * @property Order[] $orders
+ * @property ProductWarranty[] $productWarranties
  */
 class Customer extends \yii\db\ActiveRecord
 {
@@ -119,9 +119,9 @@ class Customer extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getOrders()
+    public function getOrder()
     {
-        return $this->hasMany(Orders::class, ['customer_id' => 'id']);
+        return $this->hasMany(Order::class, ['customer_id' => 'id']);
     }
 
     /**
@@ -129,9 +129,9 @@ class Customer extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getProductWarranties()
+    public function getProductWarranty()
     {
-        return $this->hasMany(ProductWarranties::class, ['customer_id' => 'id']);
+        return $this->hasMany(ProductWarranty::class, ['customer_id' => 'id']);
     }
 
     /**

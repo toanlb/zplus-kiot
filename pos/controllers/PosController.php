@@ -688,9 +688,9 @@ class PosController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         
-        $paymentMethod = Yii::$app->request->get('paymentMethod');
-        $amountTendered = Yii::$app->request->get('amountTendered');
-        $note = Yii::$app->request->get('note');
+        $paymentMethod = Yii::$app->request->post('paymentMethod');
+        $amountTendered = Yii::$app->request->post('amountTendered');
+        $note = Yii::$app->request->post('note');
         
         // Lấy giỏ hàng từ session
         $cart = Yii::$app->session->get('pos_cart', []);

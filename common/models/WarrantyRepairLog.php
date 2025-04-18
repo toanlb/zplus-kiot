@@ -20,7 +20,7 @@ use Yii;
  * @property string|null $next_service_recommendation
  * @property int $created_at
  *
- * @property ProductWarranties $warranty
+ * @property ProductWarranty $warranty
  */
 class WarrantyRepairLog extends \yii\db\ActiveRecord
 {
@@ -50,7 +50,7 @@ class WarrantyRepairLog extends \yii\db\ActiveRecord
             [['repair_cost'], 'number'],
             [['technician', 'repair_location'], 'string', 'max' => 255],
             [['status'], 'string', 'max' => 20],
-            [['warranty_id'], 'exist', 'skipOnError' => true, 'targetClass' => ProductWarranties::class, 'targetAttribute' => ['warranty_id' => 'id']],
+            [['warranty_id'], 'exist', 'skipOnError' => true, 'targetClass' => ProductWarranty::class, 'targetAttribute' => ['warranty_id' => 'id']],
         ];
     }
 
@@ -82,7 +82,7 @@ class WarrantyRepairLog extends \yii\db\ActiveRecord
      */
     public function getWarranty()
     {
-        return $this->hasOne(ProductWarranties::class, ['id' => 'warranty_id']);
+        return $this->hasOne(ProductWarranty::class, ['id' => 'warranty_id']);
     }
 
 }
