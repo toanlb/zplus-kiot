@@ -37,7 +37,7 @@ class PosController extends Controller
                                      'add-customer', 'apply-discount', 'hold-order',
                                      'get-payment-url', 'open-session', 'get-session-info',
                                      'payment', 'complete-order', 'close-session', 
-                                     'get-categories', 'get-held-orders', 'resume-order','select-customer',],
+                                     'get-categories', 'get-held-orders', 'resume-order','select-customer','save-order-note'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
@@ -61,6 +61,7 @@ class PosController extends Controller
                     'close-session' => ['post'],
                     'resume-order' => ['post'],
                     'select-customer' => ['post'],
+                    'save-order-note' => ['post'],
                 ],
             ],
         ];
